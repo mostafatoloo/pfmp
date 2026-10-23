@@ -17,8 +17,11 @@
     "db:migrate": "pnpm --filter @pfmp/database migrate:deploy",
     "db:migrate:dev": "pnpm --filter @pfmp/database migrate:dev",
     "db:ensure": "node scripts/ensure-databases.mjs",
+    "db:backup-drill": "node scripts/backup-restore-drill.mjs",
+    "test:e2e": "pnpm --filter @pfmp/web test:e2e",
     "format": "prettier --write ."
   },
+
   "devDependencies": {
     "mssql": "^11.0.1",
     "prettier": "^3.5.3",

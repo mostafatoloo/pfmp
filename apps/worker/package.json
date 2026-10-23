@@ -13,8 +13,10 @@
   "dependencies": {
     "@pfmp/database": "workspace:*",
     "@pfmp/export-engine": "workspace:*",
-    "@pfmp/ai-gateway": "workspace:*"
+    "@pfmp/ai-gateway": "workspace:*",
+    "playwright": "^1.52.0"
   },
+
   "devDependencies": {
     "@types/node": "^22.15.21",
     "tsx": "^4.19.4",

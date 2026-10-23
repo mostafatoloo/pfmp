@@ -11,8 +11,10 @@
     "lint": "echo \"lint deferred\"",
     "test": "vitest run",
     "test:unit": "vitest run",
-    "test:integration": "vitest run --config vitest.integration.config.ts"
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:e2e": "playwright test"
   },
+
   "dependencies": {
     "@pfmp/ai-gateway": "workspace:*",
     "@pfmp/api-contracts": "workspace:*",
@@ -30,6 +32,7 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@playwright/test": "^1.52.0",
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
