@@ -19,6 +19,9 @@ model User {
   email            String    @unique @db.NVarChar(320)
   emailVerified    Boolean   @default(false)
   image            String?   @db.NVarChar(2000)
+  /// Iranian mobile 09xxxxxxxxx (Better Auth phoneNumber plugin)
+  phoneNumber      String?   @db.NVarChar(32)
+  phoneNumberVerified Boolean @default(false)
   timezone         String    @default("UTC") @db.NVarChar(64)
   locale           String    @default("en") @db.NVarChar(16)
   calendarSystem   String    @default("gregory") @db.NVarChar(32)
@@ -41,6 +44,7 @@ model User {
   notificationDeliveries  NotificationDelivery[]
   aiConversations         AiConversation[]
 
+  @@index([phoneNumber])
   @@map("user")
 }
 

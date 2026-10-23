@@ -1,41 +1,26 @@
-# Auth & session notes (Phase 1)
+# Auth notes (PFMP)
 
-## Better Auth + SQL Server
+## Primary: SMS OTP (Negin)
 
-- Adapter: Prisma client with SQL Server (`packages/auth`)
-- Tables: `user`, `session`, `account`, `verification`, `passkey`
-- Extra user fields: `timezone` (IANA), `locale`
+- Plugin: Better Auth `phoneNumber`
+- SMS provider: Negin panel `https://sms.3300.ir/api/wsSend.ashx`
+- Credentials: `DotisAcc.dbo.Acc_System` (`NeginUserName`, `NeginPass`, `NeginLine`) via `DOTISACC_DATABASE_URL`, or `NEGIN_USERNAME` / `NEGIN_PASSWORD` / `NEGIN_LINE`
+- Body is a **6-digit code only** (no URL) — Negin/3300 rejects messages that contain links
+- Iranian mobiles normalized to `09xxxxxxxxx`
+- `signUpOnVerification` creates an account with a temporary email (`09…@phone.pfmp.local`)
 
-## Magic link
+## Password
 
-- Plugin: `magicLink`
-- Dev: `sendMagicLink` logs URL when `RESEND_API_KEY` is unset
-- Production: configure Resend (or compatible) + `EMAIL_FROM`
-- Rate limits: Better Auth defaults on magic-link endpoints
+- Better Auth `emailAndPassword` enabled (min 6 chars)
+- Sign-in: email + password, or phone + password (`signIn.phoneNumber`)
+- After SMS verify, UI offers optional “set password” for later password login
+- Password reset OTP over SMS: `sendPasswordResetOTP` (code only)
 
-## Passkeys (WebAuthn)
+## Passkey
 
 - Plugin: `@better-auth/passkey` when `PASSKEY_ENABLED=true`
-- If WebAuthn unsupported or disabled → magic link only (sign-in UI explains this)
+- Optional fallback when WebAuthn is available
 
-## Sessions
+## Removed
 
-- Cookie sessions; multi-session supported
-- Sign-out / revocation via Better Auth session APIs
-
-## Personal workspace bootstrap
-
-On `user.create.after` → `WorkspaceRepository.createPersonalWorkspace(userId)`:
-
-1. `Workspace` (`kind=personal`)
-2. `WorkspaceMember` (`role=owner`)
-
-Idempotent if re-entered.
-
-## Authorization
-
-- `requireWorkspace(headers)` → `{ userId, workspace, … }` or **401**
-- `assertSameWorkspace` / repository filters → **403/404** on forged foreign IDs
-- **Never** authorize using a client-supplied `workspaceId` alone
-
-Security overview: [../security/README.md](../security/README.md).
+- Email magic-link is no longer used for production sign-in

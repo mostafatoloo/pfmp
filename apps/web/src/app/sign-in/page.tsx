@@ -10,12 +10,27 @@ export default function SignInPage() {
         <p className="panel-lead">{t("auth.signInSubtitle")}</p>
         <SignInForm
           labels={{
-            email: t("auth.emailLabel"),
+            tabSms: t("auth.tabSms"),
+            tabPassword: t("auth.tabPassword"),
+            mobileLabel: t("auth.mobileLabel"),
+            mobilePlaceholder: t("auth.mobilePlaceholder"),
+            codeLabel: t("auth.codeLabel"),
+            codePlaceholder: t("auth.codePlaceholder"),
+            sendCode: t("auth.sendCode"),
+            verifyCode: t("auth.verifyCode"),
+            codeSent: t("auth.codeSent"),
+            emailLabel: t("auth.emailLabel"),
             emailPlaceholder: t("auth.emailPlaceholder"),
-            sendMagicLink: t("auth.sendMagicLink"),
+            passwordLabel: t("auth.passwordLabel"),
+            passwordPlaceholder: t("auth.passwordPlaceholder"),
+            signInPassword: t("auth.signInPassword"),
+            signUpPassword: t("auth.signUpPassword"),
+            nameLabel: t("auth.nameLabel"),
+            setPasswordHint: t("auth.setPasswordHint"),
+            setPassword: t("auth.setPassword"),
+            passwordSaved: t("auth.passwordSaved"),
             passkey: t("auth.passkey"),
             signOut: t("common.signOut"),
-            magicLinkSent: t("auth.magicLinkSent"),
           }}
         />
       </section>
