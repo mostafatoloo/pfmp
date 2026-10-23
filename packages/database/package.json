@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@pfmp/domain": "workspace:*",
+    "@pfmp/export-engine": "workspace:*",
     "@prisma/adapter-mssql": "7.10.1",
     "@prisma/client": "7.10.1",
     "mssql": "^11.0.1"

@@ -34,15 +34,14 @@ type Handler = (
   params: Record<string, string>,
 ) => Promise<Response> | Response;
 
+type RouteContext = { params: Promise<Record<string, string>> };
+
 export function withAuth(handler: Handler) {
-  return async (
-    request: Request,
-    route?: { params: Promise<Record<string, string>> },
-  ): Promise<Response> => {
+  return async (request: Request, route: RouteContext): Promise<Response> => {
     const requestId = randomUUID();
     try {
       const ctx = await requireWorkspace(request.headers);
-      const params = route?.params ? await route.params : {};
+      const params = (await route?.params) ?? {};
       return await handler(request, ctx, params);
     } catch (err) {
       if (err instanceof AuthzError) {
@@ -61,7 +60,9 @@ export function withAuth(handler: Handler) {
           apiError("VALIDATION_ERROR", "Invalid request", {
             requestId,
             details: err.issues.map((i) => ({
-              path: i.path.filter((p): p is string | number => typeof p === "string" || typeof p === "number"),
+              path: i.path.filter(
+                (p): p is string | number => typeof p === "string" || typeof p === "number",
+              ),
               message: i.message,
             })),
           }),
@@ -76,7 +77,10 @@ export function withAuth(handler: Handler) {
   };
 }
 
-export async function readJson<T>(request: Request, schema: { parse: (v: unknown) => T }): Promise<T> {
+export async function readJson<T>(
+  request: Request,
+  schema: { parse: (v: unknown) => T },
+): Promise<T> {
   const body = await request.json().catch(() => ({}));
   return schema.parse(body);
 }

@@ -5,7 +5,11 @@ export default function ReportsPage() {
     <SignedInShell pathname="/reports">
       <section className="panel">
         <h1>Reports</h1>
-        <p className="muted">Exports (PDF/CSV/XLSX/JSON) land in Stage 4.</p>
+        <p>
+          Exports via <code>POST /api/v1/exports</code> (pdf/csv/xlsx/json). Persian PDF uses{" "}
+          <code>locale=fa</code> with A4 RTL HTML (Playwright when available).
+        </p>
+        <p className="muted">Progress: GET /api/v1/progress/summary</p>
       </section>
     </SignedInShell>
   );

@@ -1,4 +1,4 @@
-/** Pure domain types / invariants — no I/O (Stage 3 stub + task status enum). */
+/** Pure domain types / invariants — no I/O. */
 
 export const TASK_STATUSES = [
   "inbox",
@@ -21,3 +21,11 @@ const transitions: Record<TaskStatus, readonly TaskStatus[]> = {
 export function canTransitionTaskStatus(from: TaskStatus, to: TaskStatus): boolean {
   return transitions[from].includes(to);
 }
+
+export {
+  planDeterministic,
+  type PlanningBlockInput,
+  type PlanningEngineInput,
+  type PlanningEngineResult,
+  type PlannedItem,
+} from "./planning-engine";

@@ -1,9 +1,10 @@
 import { format } from "date-fns";
+import { format as formatJalali } from "date-fns-jalali";
 
 /**
- * Stage 3 stub — Jalali display helpers land fully in Stage 4 (ADR-005).
- * Storage remains Gregorian/UTC; this package only formats for UI.
+ * Jalali display helpers (ADR-005). Storage remains Gregorian/UTC.
  */
+
 export function formatUtcIso(date: Date): string {
   return date.toISOString();
 }
@@ -12,9 +13,10 @@ export function formatGregorianDisplay(date: Date, pattern = "yyyy-MM-dd"): stri
   return format(date, pattern);
 }
 
-/** Placeholder until date-fns-jalali wiring is verified in Stage 4 */
-export function formatJalaliDisplay(date: Date): string {
-  // Keep dependency present; full Jalali format in Stage 4 calendar module
-  void date;
-  return formatGregorianDisplay(date) + " (Jalali TBD)";
+export function formatJalaliDisplay(date: Date, pattern = "yyyy/MM/dd"): string {
+  return formatJalali(date, pattern);
+}
+
+export function formatJalaliDateTime(date: Date): string {
+  return formatJalali(date, "yyyy/MM/dd HH:mm");
 }
