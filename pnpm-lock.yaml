@@ -169,6 +169,9 @@ importers:
 
   packages/database:
     dependencies:
+      '@pfmp/domain':
+        specifier: workspace:*
+        version: link:../domain
       '@prisma/adapter-mssql':
         specifier: 7.10.1
         version: 7.10.1
