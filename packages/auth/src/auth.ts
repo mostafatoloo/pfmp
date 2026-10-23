@@ -1,5 +1,5 @@
 import { betterAuth } from "better-auth";
-import { phoneNumber } from "better-auth/plugins";
+import { phoneNumber, username } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { APIError } from "better-auth/api";
@@ -8,8 +8,8 @@ import { authLogger } from "./logger";
 import { normalizeMobile, sendNeginSms } from "./negin-sms";
 
 /**
- * Auth: SMS OTP (Negin via DotisAcc Acc_System) + email/phone password.
- * OTP SMS contains only a short code — never a URL (Negin/3300 rejects links).
+ * Auth: username + password.
+ * Phone is collected at sign-up (no SMS then). SMS OTP is only for password reset (Negin).
  */
 function passkeyPlugins() {
   if (process.env.PASSKEY_ENABLED === "false") {
@@ -29,7 +29,7 @@ function passkeyPlugins() {
 
 const otpStore: { lastPhone?: string; lastCode?: string } = {};
 
-/** Dev/test helper — last OTP when SMS is logged locally. */
+/** Dev/test helper — last password-reset OTP. */
 export function getLastOtpForTests(): { phone?: string; code?: string } {
   return { phone: otpStore.lastPhone, code: otpStore.lastCode };
 }
@@ -37,6 +37,10 @@ export function getLastOtpForTests(): { phone?: string; code?: string } {
 /** @deprecated magic link removed — kept for older test imports */
 export function getLastMagicLinkForTests(): { url?: string; email?: string } {
   return {};
+}
+
+export function syntheticEmailForUsername(username: string): string {
+  return `${username.toLowerCase()}@users.pfmp.local`;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -90,6 +94,30 @@ export function createAuth(): Auth {
     databaseHooks: {
       user: {
         create: {
+          before: async (user) => {
+            const phone = normalizeMobile(
+              typeof user.phoneNumber === "string" ? user.phoneNumber : null,
+            );
+            if (!phone) {
+              throw new APIError("BAD_REQUEST", {
+                message: "شماره موبایل معتبر نیست (مثال: 09123456789)",
+              });
+            }
+            const taken = await prisma.user.findFirst({
+              where: { phoneNumber: phone },
+              select: { id: true },
+            });
+            if (taken) {
+              throw new APIError("BAD_REQUEST", { message: "این شماره موبایل قبلاً ثبت شده است" });
+            }
+            return {
+              data: {
+                ...user,
+                phoneNumber: phone,
+                phoneNumberVerified: false,
+              },
+            };
+          },
           after: async (user) => {
             try {
               await workspaces.createPersonalWorkspace(user.id, `${user.name || "Personal"}`);
@@ -113,26 +141,18 @@ export function createAuth(): Auth {
       },
     },
     plugins: [
+      username({
+        minUsernameLength: 3,
+        maxUsernameLength: 30,
+        displayUsername: false,
+      }),
       phoneNumber({
         otpLength: 6,
         expiresIn: 300,
-        sendOTP: async ({ phoneNumber: phone, code }) => {
-          const normalized = normalizeMobile(phone);
-          if (!normalized) {
-            throw new APIError("BAD_REQUEST", { message: "شماره موبایل معتبر نیست (مثال: 09123456789)" });
-          }
-          otpStore.lastPhone = normalized;
-          otpStore.lastCode = code;
-          const message = `کد ورود PFMP: ${code}\nتا ۵ دقیقه معتبر است.`;
-          const result = await sendNeginSms(normalized, message);
-          if (!result.ok) {
-            authLogger.error("failed to send OTP SMS", { phone: normalized, msg: result.msg });
-            if (process.env.NODE_ENV !== "production") {
-              authLogger.info("OTP (dev log — SMS failed)", { phone: normalized, code });
-              return;
-            }
-            throw new APIError("BAD_REQUEST", { message: result.msg });
-          }
+        sendOTP: async () => {
+          throw new APIError("BAD_REQUEST", {
+            message: "ورود با پیامک غیرفعال است. از نام کاربری و رمز عبور استفاده کنید.",
+          });
         },
         sendPasswordResetOTP: async ({ phoneNumber: phone, code }) => {
           const normalized = normalizeMobile(phone);
@@ -144,6 +164,10 @@ export function createAuth(): Auth {
           const message = `بازیابی رمز PFMP\nکد: ${code}\nتا ۵ دقیقه معتبر است.`;
           const result = await sendNeginSms(normalized, message);
           if (!result.ok) {
+            authLogger.error("failed to send password-reset SMS", {
+              phone: normalized,
+              msg: result.msg,
+            });
             if (process.env.NODE_ENV !== "production") {
               authLogger.info("password-reset OTP (dev log)", { phone: normalized, code });
               return;
@@ -152,13 +176,6 @@ export function createAuth(): Auth {
           }
         },
         phoneNumberValidator: async (phone) => Boolean(normalizeMobile(phone)),
-        signUpOnVerification: {
-          getTempEmail: (phone) => {
-            const n = normalizeMobile(phone) ?? phone.replace(/\D/g, "");
-            return `${n}@phone.pfmp.local`;
-          },
-          getTempName: (phone) => normalizeMobile(phone) ?? phone,
-        },
       }),
       ...passkeyPlugins(),
     ],

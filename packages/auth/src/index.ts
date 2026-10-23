@@ -4,6 +4,7 @@ export {
   getLastOtpForTests,
   getLastMagicLinkForTests,
   resetAuthForTests,
+  syntheticEmailForUsername,
   type Auth,
 } from "./auth";
 export { normalizeMobile, sendNeginSms, loadNeginCredentials } from "./negin-sms";
