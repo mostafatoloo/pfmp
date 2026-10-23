@@ -16,8 +16,12 @@ const config = {
   password,
   database: "master",
   options: {
-    encrypt: true,
+    // Node 22+ rejects TLS SNI with a bare IP; encrypt=false works for LAN SQL.
+    encrypt: process.env.MSSQL_ENCRYPT === "true",
     trustServerCertificate: true,
+    ...(process.env.MSSQL_TLS_SERVERNAME
+      ? { serverName: process.env.MSSQL_TLS_SERVERNAME }
+      : {}),
   },
   connectionTimeout: 30_000,
 };
