@@ -5,6 +5,29 @@ const SEND_URL = "https://sms.3300.ir/api/wsSend.ashx";
 
 export type NeginCreds = { userName: string; password: string; line: string };
 
+/** Map Negin message_id / status codes (see Delphi NeginSMS.pas). */
+function neginStatusMessage(code: number, apiMsg?: string): string {
+  switch (code) {
+    case 1:
+      return "نام کاربری یا کلمه عبور وب‌سرویس ارسال نشده است.";
+    case 2:
+    case 14:
+      return "اعتبار ریالی حساب کافی نیست.";
+    case 5:
+      return "شماره خط فرستنده نامعتبر است.";
+    case 8:
+      return "شماره گیرنده نامعتبر است.";
+    case 9:
+      return "شماره گیرنده در لیست سیاه مخابرات است.";
+    case 18:
+      return "نام کاربری یا کلمه عبور اشتباه است!";
+    case 409:
+      return "فاصله درخواست‌های ارسال کمتر از ۵ ثانیه است.";
+    default:
+      return apiMsg?.trim() || `خطا در ارسال پیامک. کد ${code}`;
+  }
+}
+
 /** Iranian mobile → 09xxxxxxxxx (Negin / DotisAcc style). */
 export function normalizeMobile(raw: string | null | undefined): string | null {
   if (!raw?.trim()) return null;
@@ -131,8 +154,9 @@ export async function sendNeginSms(mobile: string, message: string): Promise<{ o
     });
     const content = await response.text();
     if (response.status === 401) return { ok: false, msg: "تنظیمات پنل پیامک نامعتبر است" };
+    // Negin requires ≥5s between sends (Delphi WaitSendGap).
     if (response.status === 409 && attempt === 0) {
-      await new Promise((r) => setTimeout(r, 1100));
+      await new Promise((r) => setTimeout(r, 5200));
       continue;
     }
     if (!response.ok) {
@@ -150,7 +174,8 @@ export async function sendNeginSms(mobile: string, message: string): Promise<{ o
 
     const status = typeof root.status === "number" ? root.status : Number(root.status ?? 0);
     if (status !== -1) {
-      const msg = typeof root.msg === "string" ? root.msg : "ارسال پیامک پذیرفته نشد";
+      const apiMsg = typeof root.msg === "string" ? root.msg : "";
+      const msg = neginStatusMessage(status, apiMsg);
       authLogger.error("Negin SMS rejected", { status, msg, mobile: normalized });
       return { ok: false, msg };
     }
@@ -158,8 +183,9 @@ export async function sendNeginSms(mobile: string, message: string): Promise<{ o
     const data = root.data as { message_id?: number | string } | undefined;
     const messageId = Number(data?.message_id ?? -1);
     if (!(messageId > 1000)) {
-      authLogger.error("Negin SMS not delivered", { messageId, mobile: normalized });
-      return { ok: false, msg: "پیامک ارسال نشد" };
+      const msg = neginStatusMessage(messageId);
+      authLogger.error("Negin SMS not delivered", { messageId, msg, mobile: normalized });
+      return { ok: false, msg };
     }
 
     authLogger.info("Negin SMS sent", { mobile: normalized, messageId });
