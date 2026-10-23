@@ -15,6 +15,7 @@ function serializeTask(t: {
   projectId: string | null;
   courseId: string | null;
   priority: number | null;
+  pomodoroEstimate: number | null;
   createdAtUtc: Date;
   updatedAtUtc: Date;
 }) {
@@ -30,6 +31,7 @@ function serializeTask(t: {
     projectId: t.projectId,
     courseId: t.courseId,
     priority: t.priority,
+    pomodoroEstimate: t.pomodoroEstimate,
     createdAtUtc: t.createdAtUtc.toISOString(),
     updatedAtUtc: t.updatedAtUtc.toISOString(),
   };
@@ -67,6 +69,7 @@ export const POST = withAuth(async (request, ctx) => {
       projectId: body.projectId,
       courseId: body.courseId,
       priority: body.priority,
+      pomodoroEstimate: body.pomodoroEstimate,
     });
     return NextResponse.json({ data: serializeTask(task) }, { status: 201 });
   } catch (err) {

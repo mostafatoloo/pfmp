@@ -1,19 +1,19 @@
 export type NavItem = {
   href: string;
-  /** English label for Stage 3; i18n keys later */
-  label: string;
-  /** Persian label placeholder for RTL readiness */
-  labelFa: string;
+  /** i18n key under nav.* */
+  labelKey: string;
 };
 
 export const APP_NAV: NavItem[] = [
-  { href: "/today", label: "Today", labelFa: "امروز" },
-  { href: "/tasks", label: "Tasks", labelFa: "کارها" },
-  { href: "/study", label: "Study", labelFa: "مطالعه" },
-  { href: "/calendar", label: "Calendar", labelFa: "تقویم" },
-  { href: "/time", label: "Time", labelFa: "زمان" },
-  { href: "/reports", label: "Reports", labelFa: "گزارش‌ها" },
-  { href: "/settings", label: "Settings", labelFa: "تنظیمات" },
+  { href: "/today", labelKey: "nav.today" },
+  { href: "/tasks", labelKey: "nav.tasks" },
+  { href: "/study", labelKey: "nav.study" },
+  { href: "/calendar", labelKey: "nav.calendar" },
+  { href: "/time", labelKey: "nav.time" },
+  { href: "/meals", labelKey: "nav.meals" },
+  { href: "/family", labelKey: "nav.family" },
+  { href: "/reports", labelKey: "nav.reports" },
+  { href: "/settings", labelKey: "nav.settings" },
 ];
 
 export const DEFAULT_APP_PATH = "/today";

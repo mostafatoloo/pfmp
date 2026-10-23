@@ -5,7 +5,18 @@ import { createBrowserAuthClient } from "@pfmp/auth/client";
 
 const authClient = createBrowserAuthClient();
 
-export function SignInForm() {
+export function SignInForm({
+  labels,
+}: {
+  labels: {
+    email: string;
+    emailPlaceholder: string;
+    sendMagicLink: string;
+    passkey: string;
+    signOut: string;
+    magicLinkSent: string;
+  };
+}) {
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [status, setStatus] = useState<string | null>(null);
@@ -25,7 +36,7 @@ export function SignInForm() {
       if (error) {
         setStatus(error.message ?? "Failed to send magic link");
       } else {
-        setStatus("Check your email for the magic link (dev: see server logs).");
+        setStatus(labels.magicLinkSent);
       }
     } catch (err) {
       setStatus(err instanceof Error ? err.message : "Unexpected error");
@@ -62,13 +73,14 @@ export function SignInForm() {
   return (
     <form onSubmit={onSubmit}>
       <div className="field">
-        <label htmlFor="email">Email</label>
+        <label htmlFor="email">{labels.email}</label>
         <input
           id="email"
           name="email"
           type="email"
           autoComplete="username webauthn"
           required
+          placeholder={labels.emailPlaceholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -83,18 +95,22 @@ export function SignInForm() {
           onChange={(e) => setName(e.target.value)}
         />
       </div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+      <div className="row">
         <button className="btn" type="submit" disabled={busy}>
-          Email magic link
+          {labels.sendMagicLink}
         </button>
         <button className="btn secondary" type="button" disabled={busy} onClick={onPasskey}>
-          Passkey
+          {labels.passkey}
         </button>
-        <button className="btn secondary" type="button" disabled={busy} onClick={onSignOut}>
-          Sign out
+        <button className="btn ghost" type="button" disabled={busy} onClick={onSignOut}>
+          {labels.signOut}
         </button>
       </div>
-      {status ? <p className="muted">{status}</p> : null}
+      {status ? (
+        <p className="muted" role="status" style={{ marginBlockStart: "1rem" }}>
+          {status}
+        </p>
+      ) : null}
     </form>
   );
 }

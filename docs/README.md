@@ -1,6 +1,6 @@
-# PFMP documentation (Phase 1)
+# PFMP documentation
 
-In-repo delivery docs for [`mostafatoloo/pfmp`](https://github.com/mostafatoloo/pfmp). Canonical product/architecture binding also lives in the Project Context store (`phase-1-spec.md`, ADRs, schema, API contracts, test strategy).
+In-repo delivery docs for [`mostafatoloo/pfmp`](https://github.com/mostafatoloo/pfmp).
 
 | Area | Doc |
 |------|-----|
@@ -11,6 +11,8 @@ In-repo delivery docs for [`mostafatoloo/pfmp`](https://github.com/mostafatoloo/
 | SQL Server setup | [setup/sql-server.md](./setup/sql-server.md) |
 | Environment reference | [setup/environment.md](./setup/environment.md) |
 | Local development | [setup/local-development.md](./setup/local-development.md) |
+| Internationalization | [setup/i18n.md](./setup/i18n.md) |
+| Telegram | [setup/telegram.md](./setup/telegram.md) |
 | Migrations | [setup/migrations.md](./setup/migrations.md) |
 | Deployment | [setup/deployment.md](./setup/deployment.md) |
 | Test execution | [testing/README.md](./testing/README.md) |
@@ -20,6 +22,7 @@ In-repo delivery docs for [`mostafatoloo/pfmp`](https://github.com/mostafatoloo/
 | Security | [security/README.md](./security/README.md) |
 | Export formats | [export/formats.md](./export/formats.md) |
 | Known limitations | [limitations.md](./limitations.md) |
-| Phase 2 recommendations (notes only) | [phase-2-recommendations.md](./phase-2-recommendations.md) |
+| Phase 2 completion report | [phase-2-completion-report.md](./phase-2-completion-report.md) |
+| Phase 2 earlier notes | [phase-2-recommendations.md](./phase-2-recommendations.md) |
 
-**Phase 1 status:** Stages 3–6 delivered on PR #1. **Stop for explicit approval** before Phase 2/3 work.
+**Phase 2 status:** Implemented for review — see [phase-2-completion-report.md](./phase-2-completion-report.md). **Stop before Phase 3.**

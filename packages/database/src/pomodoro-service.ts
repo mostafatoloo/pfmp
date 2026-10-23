@@ -38,24 +38,53 @@ export class PomodoroService {
     });
   }
 
-  listSessions(workspaceId: string) {
+  listSessions(workspaceId: string, opts?: { userId?: string; taskId?: string }) {
     return this.prisma.pomodoroSession.findMany({
-      where: { workspaceId, deletedAtUtc: null },
+      where: {
+        workspaceId,
+        deletedAtUtc: null,
+        ...(opts?.userId ? { userId: opts.userId } : {}),
+        ...(opts?.taskId ? { taskId: opts.taskId } : {}),
+      },
       orderBy: { startedAtUtc: "desc" },
     });
   }
 
-  async startSession(workspaceId: string, kind: "work" | "short_break" | "long_break") {
+  countCompletedWorkForTask(workspaceId: string, taskId: string) {
+    return this.prisma.pomodoroSession.count({
+      where: {
+        workspaceId,
+        taskId,
+        kind: "work",
+        endedAtUtc: { not: null },
+        deletedAtUtc: null,
+      },
+    });
+  }
+
+  async startSession(
+    workspaceId: string,
+    kind: "work" | "short_break" | "long_break",
+    opts?: { taskId?: string | null; userId?: string | null },
+  ) {
+    const open = await this.prisma.pomodoroSession.findFirst({
+      where: { workspaceId, endedAtUtc: null, deletedAtUtc: null },
+    });
+    if (open) {
+      throw new PomodoroServiceError("CONFLICT", "A Pomodoro session is already running");
+    }
     return this.prisma.pomodoroSession.create({
       data: {
         workspaceId,
         kind,
         startedAtUtc: utcNow(),
+        taskId: opts?.taskId ?? null,
+        userId: opts?.userId ?? null,
       },
     });
   }
 
-  async stopSession(workspaceId: string, id: string, linkTimeEntry = false) {
+  async stopSession(workspaceId: string, id: string, linkTimeEntry = true) {
     const session = await this.prisma.pomodoroSession.findFirst({
       where: { id, workspaceId, deletedAtUtc: null },
     });
@@ -76,6 +105,7 @@ export class PomodoroService {
             endedAtUtc,
             durationSeconds,
             source: "pomodoro",
+            taskId: session.taskId,
           },
         });
         timeEntryId = entry.id;
@@ -84,6 +114,13 @@ export class PomodoroService {
         where: { id },
         data: { endedAtUtc, durationSeconds, timeEntryId },
       });
+    });
+  }
+
+  async getActive(workspaceId: string) {
+    return this.prisma.pomodoroSession.findFirst({
+      where: { workspaceId, endedAtUtc: null, deletedAtUtc: null },
+      orderBy: { startedAtUtc: "desc" },
     });
   }
 }

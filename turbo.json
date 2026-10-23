@@ -12,7 +12,11 @@
     "NODE_ENV",
     "MSSQL_SA_PASSWORD",
     "MSSQL_HOST",
-    "MSSQL_PORT"
+    "MSSQL_PORT",
+    "TELEGRAM_BOT_TOKEN",
+    "TELEGRAM_BOT_USERNAME",
+    "TELEGRAM_WEBHOOK_SECRET",
+    "PFMP_FORCE_RTL"
   ],
   "tasks": {
     "build": {

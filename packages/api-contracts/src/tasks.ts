@@ -17,6 +17,7 @@ export const taskCreateSchema = z.object({
   projectId: uuid.nullable().optional(),
   courseId: uuid.nullable().optional(),
   priority: z.number().int().nullable().optional(),
+  pomodoroEstimate: z.number().int().min(1).max(100).nullable().optional(),
 });
 
 export const taskUpdateSchema = z
@@ -28,6 +29,7 @@ export const taskUpdateSchema = z
     projectId: uuid.nullable().optional(),
     courseId: uuid.nullable().optional(),
     priority: z.number().int().nullable().optional(),
+    pomodoroEstimate: z.number().int().min(1).max(100).nullable().optional(),
   })
   .refine((v) => Object.keys(v).length > 0, { message: "At least one field required" });
 

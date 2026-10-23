@@ -1,8 +1,8 @@
 # PFMP — Personal and Family Management Platform
 
-Phase 1 greenfield monorepo ([`mostafatoloo/pfmp`](https://github.com/mostafatoloo/pfmp)). **Microsoft SQL Server only** (no PostgreSQL).
+Phase 1+2 monorepo ([`mostafatoloo/pfmp`](https://github.com/mostafatoloo/pfmp)). **Microsoft SQL Server only** (no PostgreSQL).
 
-**Status:** Stages 3–6 delivered on [PR #1](https://github.com/mostafatoloo/pfmp/pull/1). **Stop for explicit approval** before Phase 2/3.
+**Status:** Phase 2 implemented for review — see [`docs/phase-2-completion-report.md`](./docs/phase-2-completion-report.md). **Stop before Phase 3.**
 
 Docs index: [`docs/README.md`](./docs/README.md)  
 Completion report (Context): `docs/phase-1-completion-report.md`

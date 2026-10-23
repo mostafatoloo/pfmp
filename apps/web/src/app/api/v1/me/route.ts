@@ -19,7 +19,7 @@ export async function GET(request: Request) {
         workspace: {
           id: ctx.workspace.id,
           name: ctx.workspace.name,
-          kind: "personal" as const,
+          kind: ctx.workspace.kind,
         },
       },
     });

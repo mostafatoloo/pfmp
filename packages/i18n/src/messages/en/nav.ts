@@ -1,0 +1,14 @@
+export const nav = {
+  primary: "Primary",
+  today: "Today",
+  tasks: "Tasks",
+  study: "Study",
+  calendar: "Calendar",
+  time: "Time",
+  reports: "Reports",
+  family: "Family",
+  meals: "Meals",
+  assistant: "Assistant",
+  settings: "Settings",
+  notifications: "Notifications",
+} as const;

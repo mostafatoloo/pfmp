@@ -13,6 +13,7 @@ export type TaskRecord = {
   projectId: string | null;
   courseId: string | null;
   priority: number | null;
+  pomodoroEstimate: number | null;
   createdAtUtc: Date;
   updatedAtUtc: Date;
   deletedAtUtc: Date | null;
@@ -34,6 +35,7 @@ export type TaskCreateInput = {
   projectId?: string | null;
   courseId?: string | null;
   priority?: number | null;
+  pomodoroEstimate?: number | null;
 };
 
 export type TaskUpdateInput = {
@@ -44,6 +46,7 @@ export type TaskUpdateInput = {
   projectId?: string | null;
   courseId?: string | null;
   priority?: number | null;
+  pomodoroEstimate?: number | null;
 };
 
 export class TaskRepository {
@@ -63,6 +66,7 @@ export class TaskRepository {
         projectId: input.projectId ?? null,
         courseId: input.courseId ?? null,
         priority: input.priority ?? null,
+        pomodoroEstimate: input.pomodoroEstimate ?? null,
         history: {
           create: {
             workspaceId,
@@ -155,6 +159,14 @@ export class TaskRepository {
       from.courseId = existing.courseId;
       to.courseId = input.courseId;
       data.courseId = input.courseId;
+    }
+    if (
+      input.pomodoroEstimate !== undefined &&
+      input.pomodoroEstimate !== existing.pomodoroEstimate
+    ) {
+      from.pomodoroEstimate = existing.pomodoroEstimate;
+      to.pomodoroEstimate = input.pomodoroEstimate;
+      data.pomodoroEstimate = input.pomodoroEstimate;
     }
 
     if (input.status !== undefined && input.status !== existing.status) {

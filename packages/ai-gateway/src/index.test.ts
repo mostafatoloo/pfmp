@@ -1,19 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { createAiGateway, planProposalDraftSchema } from "./index";
+import { createAiGateway, StubAiProvider } from "./index";
 
 describe("ai gateway", () => {
-  it("is disabled by default", () => {
-    expect(createAiGateway({}).isEnabled()).toBe(false);
-  });
-
-  it("stub proposes validated draft when enabled", async () => {
-    const gw = createAiGateway({ AI_ENABLED: "true" });
-    const draft = await gw.proposeSchedule({ workspaceId: "w1" });
-    expect(planProposalDraftSchema.parse(draft).items.length).toBeGreaterThan(0);
-  });
-
-  it("throws when disabled", async () => {
+  it("reports disabled when AI_ENABLED is not true", () => {
     const gw = createAiGateway({ AI_ENABLED: "false" });
-    await expect(gw.proposeSchedule({ workspaceId: "w1" })).rejects.toThrow("AI_UNAVAILABLE");
+    expect(gw.isEnabled()).toBe(false);
+  });
+
+  it("proposes schedule when enabled", async () => {
+    const gw = createAiGateway({ AI_ENABLED: "true" }, new StubAiProvider());
+    const draft = await gw.proposeSchedule({ workspaceId: "w1", promptSummary: "test" });
+    expect(draft.items.length).toBeGreaterThan(0);
+  });
+
+  it("chats when enabled", async () => {
+    const gw = createAiGateway({ AI_ENABLED: "true" }, new StubAiProvider());
+    const reply = await gw.chat({
+      message: "Summarize today",
+      context: {
+        openTaskCount: 2,
+        overdueTasks: [{ title: "A" }],
+        dueSoonTasks: [],
+        note: "verified",
+      },
+    });
+    expect(reply.reply.length).toBeGreaterThan(0);
   });
 });

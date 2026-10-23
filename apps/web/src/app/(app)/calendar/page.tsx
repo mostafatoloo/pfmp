@@ -1,34 +1,48 @@
 import { SignedInShell } from "@/components/signed-in-shell";
 import { headers } from "next/headers";
-import { requireWorkspace } from "@pfmp/auth";
+import { requirePageWorkspace } from "@/lib/require-page-auth";
+import { createTranslator } from "@pfmp/i18n";
 import { getPrisma, CalendarQueryService } from "@pfmp/database";
-import { formatJalaliDisplay } from "@pfmp/calendar";
+import { currentJalaliYear } from "@pfmp/calendar";
+import { format as formatJalali, newDate } from "date-fns-jalali";
+import { JalaliYearCalendar, type CalendarEvent } from "./jalali-year-calendar";
 
 export default async function CalendarPage() {
-  const ctx = await requireWorkspace(await headers());
-  const from = new Date();
-  from.setUTCHours(0, 0, 0, 0);
-  const to = new Date(from.getTime() + 7 * 86_400_000);
-  const items = await new CalendarQueryService(getPrisma()).query(ctx.workspace.id, from, to);
+  const ctx = await requirePageWorkspace(await headers());
+  const { t } = createTranslator(ctx.locale);
+  const year = currentJalaliYear();
+
+  const from = newDate(year, 0, 1);
+  const to = newDate(year, 11, 29);
+
+  let items: Awaited<ReturnType<CalendarQueryService["query"]>> = [];
+  try {
+    items = await new CalendarQueryService(getPrisma()).query(ctx.workspace.id, from, to);
+  } catch {
+    items = [];
+  }
+
+  const events: CalendarEvent[] = items.map((item) => {
+    const d = new Date(item.startsAtUtc);
+    return {
+      id: item.id,
+      kind: item.kind,
+      title: item.title,
+      dayKey: formatJalali(d, "yyyy-MM-dd"),
+    };
+  });
+
   return (
-    <SignedInShell pathname="/calendar">
-      <section className="panel">
-        <h1>Calendar</h1>
-        <p>
-          Week · Gregorian {from.toISOString().slice(0, 10)} → {to.toISOString().slice(0, 10)} ·
-          Jalali {formatJalaliDisplay(from)} → {formatJalaliDisplay(to)}
-        </p>
-        <ul>
-          {items.length === 0 ? (
-            <li className="muted">No items in range</li>
-          ) : (
-            items.map((i) => (
-              <li key={`${i.kind}-${i.id}`}>
-                [{i.kind}] {i.title} · {i.startsAtUtc}
-              </li>
-            ))
-          )}
-        </ul>
+    <SignedInShell pathname="/calendar" locale={ctx.locale}>
+      <section className="panel stack">
+        <div>
+          <h1>{t("calendar.title")}</h1>
+          <p className="panel-lead">
+            Solar Hijri (Persian) year view. Expand months to see weekly schedules and what you need
+            to prepare for.
+          </p>
+        </div>
+        <JalaliYearCalendar events={events} initialYear={year} />
       </section>
     </SignedInShell>
   );
