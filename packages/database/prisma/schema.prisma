@@ -1,0 +1,508 @@
+// Phase 1 schema — Microsoft SQL Server (ADR-002 Prisma 7)
+// Auth tables aligned with Better Auth; domain tables per database-schema.md
+// SQL Server does not support Prisma Json — use NVarChar(Max) + Zod at boundary
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+}
+
+// ─── Better Auth (library-owned shape; extra profile fields on User) ─────────
+
+model User {
+  id            String    @id @db.NVarChar(36)
+  name          String    @db.NVarChar(200)
+  email         String    @unique @db.NVarChar(320)
+  emailVerified Boolean   @default(false)
+  image         String?   @db.NVarChar(2000)
+  timezone      String    @default("UTC") @db.NVarChar(64)
+  locale        String    @default("en") @db.NVarChar(16)
+  createdAt     DateTime  @default(now()) @db.DateTime2
+  updatedAt     DateTime  @updatedAt @db.DateTime2
+
+  sessions   Session[]
+  accounts   Account[]
+  passkeys   Passkey[]
+  memberships WorkspaceMember[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @db.NVarChar(36)
+  expiresAt DateTime @db.DateTime2
+  token     String   @unique @db.NVarChar(255)
+  createdAt DateTime @default(now()) @db.DateTime2
+  updatedAt DateTime @updatedAt @db.DateTime2
+  ipAddress String?  @db.NVarChar(64)
+  userAgent String?  @db.NVarChar(512)
+  userId    String   @db.NVarChar(36)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @db.NVarChar(36)
+  accountId             String    @db.NVarChar(255)
+  providerId            String    @db.NVarChar(255)
+  userId                String    @db.NVarChar(36)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?   @db.NVarChar(Max)
+  refreshToken          String?   @db.NVarChar(Max)
+  idToken               String?   @db.NVarChar(Max)
+  accessTokenExpiresAt  DateTime? @db.DateTime2
+  refreshTokenExpiresAt DateTime? @db.DateTime2
+  scope                 String?   @db.NVarChar(1000)
+  password              String?   @db.NVarChar(255)
+  createdAt             DateTime  @default(now()) @db.DateTime2
+  updatedAt             DateTime  @updatedAt @db.DateTime2
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @db.NVarChar(36)
+  identifier String   @db.NVarChar(255)
+  value      String   @db.NVarChar(255)
+  expiresAt  DateTime @db.DateTime2
+  createdAt  DateTime @default(now()) @db.DateTime2
+  updatedAt  DateTime @updatedAt @db.DateTime2
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+/// WebAuthn / passkey credentials (Better Auth passkey plugin)
+model Passkey {
+  id           String   @id @db.NVarChar(36)
+  name         String?  @db.NVarChar(200)
+  publicKey    String   @db.NVarChar(Max)
+  userId       String   @db.NVarChar(36)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  credentialID String   @db.NVarChar(512)
+  counter      Int
+  deviceType   String   @db.NVarChar(64)
+  backedUp     Boolean
+  transports   String?  @db.NVarChar(255)
+  createdAt    DateTime @default(now()) @db.DateTime2
+  aaguid       String?  @db.NVarChar(64)
+
+  @@index([userId])
+  @@index([credentialID])
+  @@map("passkey")
+}
+
+// ─── Workspace (Phase 1: personal owner only) ────────────────────────────────
+
+model Workspace {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  name         String    @db.NVarChar(200)
+  kind         String    @default("personal") @db.NVarChar(32)
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  members          WorkspaceMember[]
+  tasks            Task[]
+  taskHistories    TaskHistory[]
+  projects         Project[]
+  activities       Activity[]
+  terms            Term[]
+  courses          Course[]
+  topics           Topic[]
+  assessments      Assessment[]
+  topicProgress    TopicProgress[]
+  scheduleVersions ScheduleVersion[]
+  scheduleItems    ScheduleItem[]
+  planProposals    PlanProposal[]
+  timeEntries      TimeEntry[]
+  activeTimers     ActiveTimer[]
+  pomodoroConfigs  PomodoroConfig[]
+  pomodoroSessions PomodoroSession[]
+  notifications    Notification[]
+  exportArtifacts  ExportArtifact[]
+  jobs             Job[]
+
+  @@map("Workspace")
+}
+
+model WorkspaceMember {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  userId       String    @db.NVarChar(36)
+  role         String    @default("owner") @db.NVarChar(32)
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@map("WorkspaceMember")
+}
+
+// ─── Tasks (Stage 4 tables included for coherent migrate path) ───────────────
+
+model Task {
+  id               String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId      String    @db.UniqueIdentifier
+  title            String    @db.NVarChar(500)
+  notes            String?   @db.NVarChar(Max)
+  status           String    @db.NVarChar(32)
+  dueAtUtc         DateTime? @db.DateTime2
+  originalDueAtUtc DateTime? @db.DateTime2
+  completedAtUtc   DateTime? @db.DateTime2
+  projectId        String?   @db.UniqueIdentifier
+  courseId         String?   @db.UniqueIdentifier
+  priority         Int?
+  createdAtUtc     DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc     DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc     DateTime? @db.DateTime2
+
+  workspace Workspace    @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  history   TaskHistory[]
+
+  @@index([workspaceId, status, dueAtUtc])
+  @@index([workspaceId, updatedAtUtc])
+  @@map("Task")
+}
+
+model TaskHistory {
+  id           String   @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String   @db.UniqueIdentifier
+  taskId       String   @db.UniqueIdentifier
+  eventType    String   @db.NVarChar(64)
+  fromJson     String?  @db.NVarChar(Max)
+  toJson       String?  @db.NVarChar(Max)
+  actorUserId  String   @db.NVarChar(36)
+  createdAtUtc DateTime @default(now()) @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  task      Task      @relation(fields: [taskId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([taskId, createdAtUtc])
+  @@map("TaskHistory")
+}
+
+// ─── Projects / activities ───────────────────────────────────────────────────
+
+model Project {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  name         String    @db.NVarChar(300)
+  description  String?   @db.NVarChar(Max)
+  billable     Boolean   @default(false)
+  status       String    @default("active") @db.NVarChar(32)
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace  Workspace  @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  activities Activity[]
+
+  @@index([workspaceId])
+  @@map("Project")
+}
+
+model Activity {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  projectId    String    @db.UniqueIdentifier
+  name         String    @db.NVarChar(300)
+  notes        String?   @db.NVarChar(Max)
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  project   Project   @relation(fields: [projectId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([workspaceId, projectId])
+  @@map("Activity")
+}
+
+// ─── Academic ────────────────────────────────────────────────────────────────
+
+model Term {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  name         String    @db.NVarChar(200)
+  startsOn     DateTime  @db.Date
+  endsOn       DateTime  @db.Date
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  courses   Course[]
+
+  @@index([workspaceId])
+  @@map("Term")
+}
+
+model Course {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  termId       String    @db.UniqueIdentifier
+  code         String?   @db.NVarChar(64)
+  title        String    @db.NVarChar(300)
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  term        Term         @relation(fields: [termId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  topics      Topic[]
+  assessments Assessment[]
+
+  @@index([workspaceId, termId])
+  @@map("Course")
+}
+
+model Topic {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  courseId     String    @db.UniqueIdentifier
+  title        String    @db.NVarChar(300)
+  sortOrder    Int       @default(0)
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  course    Course         @relation(fields: [courseId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  progress  TopicProgress?
+
+  @@index([courseId, sortOrder])
+  @@map("Topic")
+}
+
+model Assessment {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  courseId     String    @db.UniqueIdentifier
+  title        String    @db.NVarChar(300)
+  dueAtUtc     DateTime? @db.DateTime2
+  weightPercent Decimal? @db.Decimal(5, 2)
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  course    Course    @relation(fields: [courseId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([workspaceId, courseId])
+  @@map("Assessment")
+}
+
+model TopicProgress {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  topicId      String    @unique @db.UniqueIdentifier
+  measureType  String    @db.NVarChar(32)
+  plannedValue Decimal?  @db.Decimal(18, 4)
+  actualValue  Decimal?  @db.Decimal(18, 4)
+  updatedAtUtc DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  topic     Topic     @relation(fields: [topicId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("TopicProgress")
+}
+
+// ─── Planning / schedule ─────────────────────────────────────────────────────
+
+model ScheduleVersion {
+  id               String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId      String    @db.UniqueIdentifier
+  label            String?   @db.NVarChar(200)
+  source           String    @db.NVarChar(32)
+  effectiveFromUtc DateTime? @db.DateTime2
+  createdAtUtc     DateTime  @default(now()) @db.DateTime2
+  supersededAtUtc  DateTime? @db.DateTime2
+  deletedAtUtc     DateTime? @db.DateTime2
+
+  workspace Workspace      @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  items     ScheduleItem[]
+
+  @@index([workspaceId, createdAtUtc])
+  @@map("ScheduleVersion")
+}
+
+model ScheduleItem {
+  id                String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId       String    @db.UniqueIdentifier
+  scheduleVersionId String    @db.UniqueIdentifier
+  title             String    @db.NVarChar(500)
+  startsAtUtc       DateTime  @db.DateTime2
+  endsAtUtc         DateTime  @db.DateTime2
+  durationSeconds   Int
+  taskId            String?   @db.UniqueIdentifier
+  courseId          String?   @db.UniqueIdentifier
+  topicId           String?   @db.UniqueIdentifier
+  projectId         String?   @db.UniqueIdentifier
+  constraintJson    String?   @db.NVarChar(Max)
+  createdAtUtc      DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc      DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc      DateTime? @db.DateTime2
+
+  workspace       Workspace       @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  scheduleVersion ScheduleVersion @relation(fields: [scheduleVersionId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([workspaceId, startsAtUtc, endsAtUtc])
+  @@index([scheduleVersionId, startsAtUtc])
+  @@map("ScheduleItem")
+}
+
+model PlanProposal {
+  id               String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId      String    @db.UniqueIdentifier
+  status           String    @db.NVarChar(32)
+  promptSummary    String?   @db.NVarChar(Max)
+  proposalJson     String    @db.NVarChar(Max)
+  explanation      String?   @db.NVarChar(Max)
+  modelProvider    String?   @db.NVarChar(64)
+  createdAtUtc     DateTime  @default(now()) @db.DateTime2
+  resolvedAtUtc    DateTime? @db.DateTime2
+  resolvedByUserId String?   @db.NVarChar(36)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([workspaceId, status, createdAtUtc])
+  @@map("PlanProposal")
+}
+
+// ─── Time tracking ───────────────────────────────────────────────────────────
+
+model TimeEntry {
+  id              String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId     String    @db.UniqueIdentifier
+  startedAtUtc    DateTime  @db.DateTime2
+  endedAtUtc      DateTime? @db.DateTime2
+  durationSeconds Int?
+  source          String    @db.NVarChar(32)
+  taskId          String?   @db.UniqueIdentifier
+  projectId       String?   @db.UniqueIdentifier
+  courseId        String?   @db.UniqueIdentifier
+  topicId         String?   @db.UniqueIdentifier
+  note            String?   @db.NVarChar(Max)
+  createdAtUtc    DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc    DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc    DateTime? @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([workspaceId, startedAtUtc])
+  @@map("TimeEntry")
+}
+
+model ActiveTimer {
+  id           String   @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String   @unique @db.UniqueIdentifier
+  startedAtUtc DateTime @db.DateTime2
+  taskId       String?  @db.UniqueIdentifier
+  projectId    String?  @db.UniqueIdentifier
+  note         String?  @db.NVarChar(Max)
+  createdAtUtc DateTime @default(now()) @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("ActiveTimer")
+}
+
+// ─── Pomodoro ────────────────────────────────────────────────────────────────
+
+model PomodoroConfig {
+  id                String   @id @db.UniqueIdentifier @default(uuid())
+  workspaceId       String   @unique @db.UniqueIdentifier
+  workSeconds       Int      @default(1500)
+  shortBreakSeconds Int      @default(300)
+  longBreakSeconds  Int      @default(900)
+  longBreakEvery    Int      @default(4)
+  updatedAtUtc      DateTime @updatedAt @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("PomodoroConfig")
+}
+
+model PomodoroSession {
+  id              String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId     String    @db.UniqueIdentifier
+  kind            String    @db.NVarChar(32)
+  startedAtUtc    DateTime  @db.DateTime2
+  endedAtUtc      DateTime? @db.DateTime2
+  durationSeconds Int?
+  timeEntryId     String?   @db.UniqueIdentifier
+  createdAtUtc    DateTime  @default(now()) @db.DateTime2
+  deletedAtUtc    DateTime? @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([workspaceId, startedAtUtc])
+  @@map("PomodoroSession")
+}
+
+// ─── Notifications, jobs, exports ────────────────────────────────────────────
+
+model Notification {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  userId       String    @db.NVarChar(36)
+  channel      String    @default("in_app") @db.NVarChar(32)
+  title        String    @db.NVarChar(300)
+  body         String?   @db.NVarChar(Max)
+  readAtUtc    DateTime? @db.DateTime2
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([userId, createdAtUtc])
+  @@map("Notification")
+}
+
+model Job {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  type         String    @db.NVarChar(64)
+  payloadJson  String    @db.NVarChar(Max)
+  status       String    @db.NVarChar(32)
+  workspaceId  String?   @db.UniqueIdentifier
+  attempts     Int       @default(0)
+  runAfterUtc  DateTime  @db.DateTime2
+  lockedAtUtc  DateTime? @db.DateTime2
+  lockedBy     String?   @db.NVarChar(128)
+  lastError    String?   @db.NVarChar(Max)
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc DateTime  @updatedAt @db.DateTime2
+
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([status, runAfterUtc])
+  @@map("Job")
+}
+
+model ExportArtifact {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  jobId        String?   @db.UniqueIdentifier
+  format       String    @db.NVarChar(16)
+  storagePath  String    @db.NVarChar(1000)
+  expiresAtUtc DateTime? @db.DateTime2
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([workspaceId, createdAtUtc])
+  @@map("ExportArtifact")
+}
