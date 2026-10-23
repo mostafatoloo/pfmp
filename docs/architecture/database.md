@@ -1,14 +1,35 @@
-# Database conventions
+# Schema & database conventions
 
-- Provider: SQL Server (`dbo`)
-- Domain timestamps: `*AtUtc` as `datetime2(3)` UTC
-- Durations: `int` seconds
-- Soft delete: `deletedAtUtc` nullable; default queries filter null
-- JSON blobs: `nvarchar(max)` + Zod (Prisma `Json` unsupported on SQL Server)
-- IDs: `uniqueidentifier` for domain tables; Better Auth string IDs for auth tables
+## Provider
 
-Migrations: Prisma Migrate from empty database is a Definition of Done gate.
+Microsoft SQL Server (`dbo`). Prisma schema: `packages/database/prisma/schema.prisma`.
 
-```bash
-pnpm db:migrate
-```
+## Conventions
+
+| Concern | Convention |
+|---------|------------|
+| Timestamps | `*AtUtc` as `datetime2(3)` UTC |
+| Durations | `int` seconds (`durationSeconds`) |
+| Soft delete | `deletedAtUtc` nullable; default lists filter null |
+| JSON blobs | `nvarchar(max)` + Zod parse (Prisma `Json` unsupported on MSSQL) |
+| Domain IDs | `uniqueidentifier` |
+| Auth IDs | Better Auth string IDs (`user`, `session`, …) |
+
+## Core domain groups (Phase 1)
+
+- **Workspace** / `WorkspaceMember` — personal ownership boundary
+- **Task** + `TaskHistory` — lifecycle; reschedule keeps `originalDueAtUtc`
+- **Project** / `Activity`
+- **Term** / `Course` / `Topic` / `Assessment` / topic progress measures
+- **ScheduleVersion** / items — deterministic + AI-accepted versions
+- **PlanProposal** — preview / accept / reject
+- **TimeEntry** / `ActiveTimer` (≤1 active per workspace)
+- **Pomodoro** config + sessions
+- **ExportArtifact** + **Job**
+- **Notification**
+
+Detailed column-level design: Context store `database-schema.md`.
+
+## Migrations
+
+See [../setup/migrations.md](../setup/migrations.md). Clean-DB migrate is a Definition of Done gate.

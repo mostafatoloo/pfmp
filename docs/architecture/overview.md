@@ -1,14 +1,32 @@
-# Architecture overview (Stage 3 mirror)
+# Architecture overview (Phase 1)
 
-Modular monolith:
+Modular monolith on TypeScript:
 
-- `apps/web` — Next.js UI + route handlers
-- `apps/worker` — persistent jobs (stub in Stage 3)
-- Packages: `domain`, `database`, `auth`, `api-contracts`, `validation`, `ui`, `export-engine`, `ai-gateway`, `calendar`
+| App / package | Responsibility |
+|---------------|----------------|
+| `apps/web` | Next.js App Router UI + Better Auth routes + `/api/v1/*` |
+| `apps/worker` | Claims SQL Server `Job` rows; injects Playwright PDF renderer |
+| `packages/database` | Prisma 7 SQL Server schema, repositories, domain services |
+| `packages/auth` | Better Auth config, `requireWorkspace()`, session helpers |
+| `packages/domain` | Pure rules (planning constraints, status machines) |
+| `packages/api-contracts` | Zod request/response envelopes + error codes |
+| `packages/validation` | Shared Zod primitives |
+| `packages/ui` | App shell / nav (RTL-ready) |
+| `packages/calendar` | Jalali display helpers |
+| `packages/export-engine` | CSV/XLSX/JSON/HTML PDF builders; `./pdf-chromium` subpath for worker only |
+| `packages/ai-gateway` | Provider-independent stub; offline by default |
 
-**Database:** Microsoft SQL Server + Prisma 7 (`provider = "sqlserver"`).  
-**Auth:** Better Auth via Prisma adapter (`provider: "sqlserver"`).  
-**Queue:** SQL Server `Job` table + worker (Stage 4).  
-**No PostgreSQL. No Phase 2 family/Telegram/meal features.**
+## Non-negotiable choices
 
-Workspace isolation: every domain row is scoped by `workspaceId`; Phase 1 users have exactly one personal workspace (`kind=personal`, member `role=owner`).
+- **Microsoft SQL Server** only (`provider = "sqlserver"`) — no PostgreSQL
+- **Prisma 7** + `@prisma/adapter-mssql` (pin 7.x; Prisma 8 SQL Server not assumed)
+- **Better Auth** magic link + optional passkeys
+- **Workspace isolation**: every domain row scoped by `workspaceId`; Phase 1 = one personal workspace per user (`kind=personal`, `role=owner`)
+- **Jobs**: SQL Server `Job` table + worker (no Redis required)
+- **PDF**: Chromium via Playwright in the **worker**; never bundled into Next
+
+## ADRs
+
+Canonical ADRs: Project Context `architecture-decisions.md` (ADR-001 auth, ADR-002 Prisma/MSSQL, ADR-003 jobs, ADR-004 PDF, etc.).
+
+In-repo notes: [auth-notes.md](./auth-notes.md), [database.md](./database.md), [../export/formats.md](../export/formats.md).

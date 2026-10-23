@@ -1,4 +1,4 @@
-# Playwright e2e (Stage 5)
+# Playwright e2e (Phase 1)
 
 Config: `apps/web/playwright.config.ts`  
 Specs: `apps/web/e2e/`
@@ -17,7 +17,7 @@ pnpm --filter @pfmp/web build
 pnpm test:e2e
 ```
 
-CI job installs Playwright Chromium and runs against `next start` with env from workflow.
+CI job installs Playwright Chromium and runs against `next start` with workflow env.
 
 ## Full journeys (local / optional)
 
@@ -30,3 +30,7 @@ pnpm test:e2e
 ```
 
 Covered when enabled: magic-link session, task capture, timer recover after reload.
+
+## Blockers
+
+No test mailbox in CI — full magic-link cookie flow is optional. Calendar Jalali week UI and PDF download UI e2e are deferred (API/authz covered in integration). See [phase-1-test-report.md](./phase-1-test-report.md).

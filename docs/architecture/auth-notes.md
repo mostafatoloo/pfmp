@@ -1,39 +1,41 @@
-# Auth notes (Stage 3)
+# Auth & session notes (Phase 1)
 
 ## Better Auth + SQL Server
 
-- Adapter: `prismaAdapter(prisma, { provider: "sqlserver" })` — single Prisma client for auth + domain (ADR-001 / ADR-002).
-- Tables: `user`, `session`, `account`, `verification`, `passkey` (Prisma `@@map`).
-- Extra user fields: `timezone` (IANA), `locale`.
+- Adapter: Prisma client with SQL Server (`packages/auth`)
+- Tables: `user`, `session`, `account`, `verification`, `passkey`
+- Extra user fields: `timezone` (IANA), `locale`
 
 ## Magic link
 
-- Plugin: `magicLink` from `better-auth/plugins`.
-- Dev: `sendMagicLink` logs URL when `RESEND_API_KEY` is unset.
-- Rate limits: Better Auth defaults on magic-link endpoints.
+- Plugin: `magicLink`
+- Dev: `sendMagicLink` logs URL when `RESEND_API_KEY` is unset
+- Production: configure Resend (or compatible) + `EMAIL_FROM`
+- Rate limits: Better Auth defaults on magic-link endpoints
 
 ## Passkeys (WebAuthn)
 
-- Plugin: `@better-auth/passkey` when `PASSKEY_ENABLED=true`.
-- Schema: `passkey` table migrated with Prisma.
-- **Fallback:** If WebAuthn is unsupported or passkeys disabled, users authenticate with email magic link only. UI surfaces this on the sign-in page.
+- Plugin: `@better-auth/passkey` when `PASSKEY_ENABLED=true`
+- If WebAuthn unsupported or disabled → magic link only (sign-in UI explains this)
 
-## Sessions / sign-out
+## Sessions
 
-- Cookie sessions; multi-session supported by Better Auth.
-- Sign-out / revocation via Better Auth session APIs; `session.delete.after` hook logs (redacted) for audit.
+- Cookie sessions; multi-session supported
+- Sign-out / revocation via Better Auth session APIs
 
 ## Personal workspace bootstrap
 
-On `user.create.after`, `WorkspaceRepository.createPersonalWorkspace(userId)` creates:
+On `user.create.after` → `WorkspaceRepository.createPersonalWorkspace(userId)`:
 
 1. `Workspace` (`kind=personal`)
 2. `WorkspaceMember` (`role=owner`)
 
-Idempotent if called again.
+Idempotent if re-entered.
 
-## Authorization helpers
+## Authorization
 
-- `requireWorkspace(headers)` → `{ userId, workspace, … }` or 401
-- `assertSameWorkspace(ctx, resourceWorkspaceId)` → 403 on mismatch
-- Never authorize using a client-supplied `workspaceId` alone
+- `requireWorkspace(headers)` → `{ userId, workspace, … }` or **401**
+- `assertSameWorkspace` / repository filters → **403/404** on forged foreign IDs
+- **Never** authorize using a client-supplied `workspaceId` alone
+
+Security overview: [../security/README.md](../security/README.md).
