@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "dist",
+    "noEmit": true
+  },
+  "include": ["src/**/*", "prisma.config.ts", "vitest*.ts", "tests/**/*"],
+  "exclude": ["tests/integration/phase2-meals.test.ts"]
+}

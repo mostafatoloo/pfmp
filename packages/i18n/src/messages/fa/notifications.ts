@@ -1,0 +1,15 @@
+export const notifications = {
+  title: "اعلان‌ها",
+  empty: "اعلانی نیست.",
+  markRead: "خوانده شد",
+  markAllRead: "همه خوانده شد",
+  channelInApp: "درون‌برنامه",
+  channelTelegram: "تلگرام",
+  channelEmail: "ایمیل",
+  categoryDeadlines: "مهلت‌ها",
+  categoryAssignments: "محول‌شده‌ها",
+  categoryMeals: "وعده‌ها",
+  categoryStudy: "مطالعه",
+  categoryTimers: "تایمرها",
+  categoryFamily: "خانواده",
+} as const;

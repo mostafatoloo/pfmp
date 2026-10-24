@@ -1,0 +1,15 @@
+export const notifications = {
+  title: "Notifications",
+  empty: "No notifications.",
+  markRead: "Mark as read",
+  markAllRead: "Mark all as read",
+  channelInApp: "In-app",
+  channelTelegram: "Telegram",
+  channelEmail: "Email",
+  categoryDeadlines: "Deadlines",
+  categoryAssignments: "Assignments",
+  categoryMeals: "Meals",
+  categoryStudy: "Study",
+  categoryTimers: "Timers",
+  categoryFamily: "Family",
+} as const;

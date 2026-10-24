@@ -1,0 +1,40 @@
+{
+  "name": "pfmp",
+  "private": true,
+  "packageManager": "pnpm@10.33.4",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --filter=@pfmp/web",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "test:unit": "turbo run test:unit",
+    "test:integration": "turbo run test:integration",
+    "db:generate": "pnpm --filter @pfmp/database generate",
+    "db:migrate": "pnpm --filter @pfmp/database migrate:deploy",
+    "db:migrate:dev": "pnpm --filter @pfmp/database migrate:dev",
+    "db:ensure": "node scripts/ensure-databases.mjs",
+    "db:backup-drill": "node scripts/backup-restore-drill.mjs",
+    "test:e2e": "pnpm --filter @pfmp/web test:e2e",
+    "format": "prettier --write ."
+  },
+
+  "devDependencies": {
+    "mssql": "^11.0.1",
+    "prettier": "^3.5.3",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "@prisma/client",
+      "msw"
+    ]
+  }
+}

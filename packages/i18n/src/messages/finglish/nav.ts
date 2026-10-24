@@ -1,0 +1,15 @@
+export const nav = {
+  primary: "Asli",
+  today: "Emruz",
+  tasks: "Kar-ha",
+  study: "Motale'e",
+  calendar: "Taghvim",
+  reminders: "Yadavar-ha",
+  time: "Zaman",
+  reports: "Gozaresh-ha",
+  family: "Khanevadeh",
+  meals: "Va'de-ha",
+  assistant: "Dastyar",
+  settings: "Tanzimat",
+  notifications: "E'lan-ha",
+} as const;

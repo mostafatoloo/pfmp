@@ -1,0 +1,15 @@
+export const reminders = {
+  title: "Yadavar-ha",
+  subtitle: "Alarm va yadavar-haye tarikh-dar dar taghvim namayesh dade mishavand.",
+  add: "Ezafe kardan-e yadavar",
+  titleLabel: "Onvan",
+  titlePlaceholder: "masalan Emtehan — Hesaban",
+  whenLabel: "Zaman",
+  notesLabel: "Yaddasht",
+  notesPlaceholder: "Joz'iyat-e ekhtiari",
+  empty: "Hanuz yadavari nist. Baraye emtehan ya gharar ezafe konid.",
+  delete: "Hazf",
+  save: "Zakhire",
+  upcoming: "Pish-ro",
+  past: "Gozashte",
+} as const;

@@ -1,0 +1,17 @@
+node_modules
+.turbo
+dist
+.next
+.env
+.env.local
+.env.*.local
+*.log
+coverage
+playwright-report
+test-results
+packages/database/generated
+.DS_Store
+*.tsbuildinfo
+infra/docker/data
+exports/
+packages/database/.env

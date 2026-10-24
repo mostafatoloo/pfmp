@@ -1,0 +1,15 @@
+export const notifications = {
+  title: "E'lan-ha",
+  empty: "E'lani nist.",
+  markRead: "Khande shod",
+  markAllRead: "Hame khande shod",
+  channelInApp: "Darun-e barname",
+  channelTelegram: "Telegram",
+  channelEmail: "Email",
+  categoryDeadlines: "Mohlat-ha",
+  categoryAssignments: "Separde-shode-ha",
+  categoryMeals: "Va'de-ha",
+  categoryStudy: "Motale'e",
+  categoryTimers: "Timer-ha",
+  categoryFamily: "Khanevadeh",
+} as const;
