@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { useT } from "@pfmp/i18n/react";
 import {
   WEEK_DAYS,
   fmtMinutes,
-  kindLabel,
+  kindLabelKey,
   minutesToTimeInput,
   parseTimeInput,
   type TimetableKind,
@@ -60,6 +61,7 @@ export function StudyAdvancedDay({
   onDeleteSlot,
   onCreateSlot,
 }: Props) {
+  const t = useT();
   const titleId = useId();
   const day = WEEK_DAYS.find((d) => d.js === dayOfWeek);
   const [rows, setRows] = useState<EditRow[]>([]);
@@ -104,19 +106,22 @@ export function StudyAdvancedDay({
       >
         <header className="study-modal__header">
           <div>
-            <h2 id={titleId}>Advanced · {day?.label ?? "Day"}</h2>
+            <h2 id={titleId}>
+              {t("study.advanced")}
+              {day ? ` · ${t(day.labelKey)}` : ""}
+            </h2>
             <p className="muted" style={{ margin: 0 }}>
-              Edit exact start/end times, titles, descriptions, and notes for this day.
+              {t("study.weeklyLead")}
             </p>
           </div>
           <button type="button" className="btn ghost sm" onClick={onClose}>
-            Close
+            {t("common.close")}
           </button>
         </header>
 
         <div className="stack">
           {rows.length === 0 ? (
-            <p className="muted">No activities on this day yet.</p>
+            <p className="muted">{t("common.empty")}</p>
           ) : (
             rows.map((row) => (
               <div key={row.id} className="study-advanced-row card stack">
@@ -128,7 +133,7 @@ export function StudyAdvancedDay({
                         prev.map((r) => (r.id === row.id ? { ...r, title: e.target.value } : r)),
                       )
                     }
-                    placeholder="Title"
+                    placeholder={t("study.titlePlaceholder")}
                     style={{ flex: "1 1 140px" }}
                   />
                   <select
@@ -143,9 +148,9 @@ export function StudyAdvancedDay({
                       )
                     }
                   >
-                    <option value="school_class">{kindLabel("school_class")}</option>
-                    <option value="study_session">{kindLabel("study_session")}</option>
-                    <option value="other_class">{kindLabel("other_class")}</option>
+                    <option value="school_class">{t(kindLabelKey("school_class"))}</option>
+                    <option value="study_session">{t(kindLabelKey("study_session"))}</option>
+                    <option value="other_class">{t(kindLabelKey("other_class"))}</option>
                   </select>
                   <input
                     type="time"
@@ -175,7 +180,7 @@ export function StudyAdvancedDay({
                       ),
                     )
                   }
-                  placeholder="Description"
+                  placeholder={t("study.descriptionPlaceholder")}
                 />
                 <textarea
                   value={row.notes}
@@ -184,7 +189,7 @@ export function StudyAdvancedDay({
                       prev.map((r) => (r.id === row.id ? { ...r, notes: e.target.value } : r)),
                     )
                   }
-                  placeholder="Notes"
+                  placeholder={t("study.notesPlaceholder")}
                   rows={2}
                 />
                 <div className="row" style={{ justifyContent: "flex-end" }}>
@@ -194,7 +199,7 @@ export function StudyAdvancedDay({
                     disabled={busy}
                     onClick={() => void onDeleteSlot(row.id)}
                   >
-                    Delete
+                    {t("common.delete")}
                   </button>
                   <button
                     type="button"
@@ -211,7 +216,7 @@ export function StudyAdvancedDay({
                       }).catch((err: Error) => setError(err.message))
                     }
                   >
-                    Save
+                    {t("common.save")}
                   </button>
                 </div>
               </div>
@@ -219,12 +224,12 @@ export function StudyAdvancedDay({
           )}
 
           <div className="card stack">
-            <strong>Add activity</strong>
+            <strong>{t("study.addActivity")}</strong>
             <div className="row">
               <input
                 value={draft.title}
                 onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-                placeholder="Title"
+                placeholder={t("study.titlePlaceholder")}
                 style={{ flex: "1 1 140px" }}
               />
               <select
@@ -233,9 +238,9 @@ export function StudyAdvancedDay({
                   setDraft((d) => ({ ...d, kind: e.target.value as TimetableKind }))
                 }
               >
-                <option value="study_session">{kindLabel("study_session")}</option>
-                <option value="school_class">{kindLabel("school_class")}</option>
-                <option value="other_class">{kindLabel("other_class")}</option>
+                <option value="study_session">{t(kindLabelKey("study_session"))}</option>
+                <option value="school_class">{t(kindLabelKey("school_class"))}</option>
+                <option value="other_class">{t(kindLabelKey("other_class"))}</option>
               </select>
               <input
                 type="time"
@@ -251,12 +256,12 @@ export function StudyAdvancedDay({
             <input
               value={draft.description}
               onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
-              placeholder="Description"
+              placeholder={t("study.descriptionPlaceholder")}
             />
             <textarea
               value={draft.notes}
               onChange={(e) => setDraft((d) => ({ ...d, notes: e.target.value }))}
-              placeholder="Notes"
+              placeholder={t("study.notesPlaceholder")}
               rows={2}
             />
             <div className="row" style={{ justifyContent: "flex-end" }}>
@@ -285,7 +290,7 @@ export function StudyAdvancedDay({
                   )
                 }
               >
-                Add
+                {t("study.addActivity")}
               </button>
             </div>
           </div>

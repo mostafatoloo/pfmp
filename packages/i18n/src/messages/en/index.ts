@@ -7,6 +7,7 @@ import { family } from "./family";
 import { meals } from "./meals";
 import { nav } from "./nav";
 import { notifications } from "./notifications";
+import { reminders } from "./reminders";
 import { reports } from "./reports";
 import { settings } from "./settings";
 import { study } from "./study";
@@ -24,6 +25,7 @@ export const enMessages = {
   time,
   reports,
   calendar: calendarNs,
+  reminders,
   family,
   meals,
   settings,

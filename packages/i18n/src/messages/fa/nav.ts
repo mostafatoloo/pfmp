@@ -4,6 +4,7 @@ export const nav = {
   tasks: "کارها",
   study: "مطالعه",
   calendar: "تقویم",
+  reminders: "یادآورها",
   time: "زمان",
   reports: "گزارش‌ها",
   family: "خانواده",

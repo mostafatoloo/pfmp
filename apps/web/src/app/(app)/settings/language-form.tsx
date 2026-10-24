@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useT } from "@pfmp/i18n/react";
 
 export type LanguageOption = {
   code: string;
@@ -20,6 +21,7 @@ export function LanguageForm({
   languageLabel: string;
   hint: string;
 }) {
+  const t = useT();
   const router = useRouter();
   const [locale, setLocale] = useState(initialLocale);
   const [busy, setBusy] = useState(false);
@@ -37,11 +39,11 @@ export function LanguageForm({
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setMessage(json?.error?.message ?? "Could not save language");
+        setMessage(json?.error?.message ?? t("settings.saveFailed"));
         setLocale(initialLocale);
         return;
       }
-      setMessage("Saved.");
+      setMessage(t("settings.saved"));
       router.refresh();
     } finally {
       setBusy(false);

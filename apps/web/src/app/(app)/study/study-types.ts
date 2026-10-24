@@ -22,16 +22,29 @@ export type StudySettingsDto = {
   dayEndMinutes: number;
 };
 
-/** Week rows in Iranian school order: Saturday → Friday */
+/** Week rows in Iranian school order: Saturday → Friday (labels via i18n). */
 export const WEEK_DAYS = [
-  { js: 6, label: "Saturday", short: "Sat" },
-  { js: 0, label: "Sunday", short: "Sun" },
-  { js: 1, label: "Monday", short: "Mon" },
-  { js: 2, label: "Tuesday", short: "Tue" },
-  { js: 3, label: "Wednesday", short: "Wed" },
-  { js: 4, label: "Thursday", short: "Thu" },
-  { js: 5, label: "Friday", short: "Fri" },
+  { js: 6, labelKey: "common.weekdaySat", shortKey: "common.weekdaySatShort" },
+  { js: 0, labelKey: "common.weekdaySun", shortKey: "common.weekdaySunShort" },
+  { js: 1, labelKey: "common.weekdayMon", shortKey: "common.weekdayMonShort" },
+  { js: 2, labelKey: "common.weekdayTue", shortKey: "common.weekdayTueShort" },
+  { js: 3, labelKey: "common.weekdayWed", shortKey: "common.weekdayWedShort" },
+  { js: 4, labelKey: "common.weekdayThu", shortKey: "common.weekdayThuShort" },
+  { js: 5, labelKey: "common.weekdayFri", shortKey: "common.weekdayFriShort" },
 ] as const;
+
+export function kindLabelKey(kind: string) {
+  switch (kind) {
+    case "school_class":
+      return "study.kindSchool";
+    case "study_session":
+      return "study.kindStudy";
+    case "other_class":
+      return "study.kindOther";
+    default:
+      return "study.kindOther";
+  }
+}
 
 export function schoolDaysForPattern(pattern: SchoolWeekPattern): Set<number> {
   return new Set(pattern === "sat_wed" ? [6, 0, 1, 2, 3] : [6, 0, 1, 2, 3, 4]);
@@ -57,15 +70,3 @@ export function snapMinutes(mins: number, step = 5) {
   return Math.round(mins / step) * step;
 }
 
-export function kindLabel(kind: string) {
-  switch (kind) {
-    case "school_class":
-      return "School";
-    case "study_session":
-      return "Study";
-    case "other_class":
-      return "Other";
-    default:
-      return kind;
-  }
-}

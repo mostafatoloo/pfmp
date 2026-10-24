@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { requirePageWorkspace } from "@/lib/require-page-auth";
 import { createTranslator, enabledLocales } from "@pfmp/i18n";
 import { LanguageForm } from "./language-form";
+import { PrefsForm } from "./prefs-form";
 import { SignOutButton } from "./sign-out-button";
 import { TelegramLinkPanel } from "./telegram-link-panel";
 
@@ -12,16 +13,16 @@ export default async function SettingsPage() {
   const languages = enabledLocales();
 
   return (
-    <SignedInShell pathname="/settings" locale={ctx.locale}>
+    <SignedInShell pathname="/settings" locale={ctx.locale} calendarSystem={ctx.calendarSystem} weekStartsOn={ctx.weekStartsOn}>
       <section className="panel stack">
         <div>
           <h1>{t("settings.title")}</h1>
-          <p className="panel-lead">Profile, locale, and Telegram preferences.</p>
+          <p className="panel-lead">{t("settings.subtitle")}</p>
         </div>
 
         <div className="card">
           <h2 style={{ marginTop: 0, fontSize: "1.05rem" }}>{t("settings.profile")}</h2>
-          <dl className="stack" style={{ gap: "0.5rem" }}>
+          <dl className="stack" style={{ gap: "0.75rem" }}>
             <div>
               <dt className="muted">{t("settings.email")}</dt>
               <dd className="bidi-isolate" style={{ margin: 0 }}>
@@ -41,11 +42,17 @@ export default async function SettingsPage() {
                   code: l.code,
                   label:
                     l.code === "finglish"
-                      ? "Finglish (English UI · RTL content)"
+                      ? "Finglish (Latin Persian · LTR)"
                       : l.code === "fa"
                         ? `${l.nativeName} / Persian`
                         : l.nativeName,
                 }))}
+              />
+            </div>
+            <div>
+              <PrefsForm
+                initialCalendarSystem={ctx.calendarSystem}
+                initialWeekStartsOn={ctx.weekStartsOn}
               />
             </div>
             <div>

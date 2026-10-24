@@ -9,7 +9,7 @@ export default async function MealsPage() {
   const { t } = createTranslator(ctx.locale);
 
   return (
-    <SignedInShell pathname="/meals" locale={ctx.locale}>
+    <SignedInShell pathname="/meals" locale={ctx.locale} calendarSystem={ctx.calendarSystem} weekStartsOn={ctx.weekStartsOn}>
       <section className="panel">
         <h1>{t("meals.title")}</h1>
         <p className="panel-lead">{t("meals.subtitle")}</p>

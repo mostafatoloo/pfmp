@@ -73,12 +73,16 @@ function cellFromDate(date: Date, inMonth: boolean): JalaliDayCell {
   };
 }
 
-/** Build Saturday-start weeks for one Jalali month. */
-export function buildJalaliMonth(year: number, monthIndex0: number): JalaliMonthBlock {
+/** Build weeks for one Jalali month (default Saturday start). */
+export function buildJalaliMonth(
+  year: number,
+  monthIndex0: number,
+  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 6,
+): JalaliMonthBlock {
   const monthStart = startOfMonth(newDate(year, monthIndex0, 1));
   const monthEnd = endOfMonth(monthStart);
-  const gridStart = startOfWeek(monthStart, { weekStartsOn: 6 });
-  const lastWeekStart = startOfWeek(monthEnd, { weekStartsOn: 6 });
+  const gridStart = startOfWeek(monthStart, { weekStartsOn });
+  const lastWeekStart = startOfWeek(monthEnd, { weekStartsOn });
   const gridEnd = addDays(lastWeekStart, 6);
 
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
@@ -101,8 +105,11 @@ export function buildJalaliMonth(year: number, monthIndex0: number): JalaliMonth
   };
 }
 
-export function buildJalaliYear(year: number): JalaliMonthBlock[] {
-  return Array.from({ length: 12 }, (_, m) => buildJalaliMonth(year, m));
+export function buildJalaliYear(
+  year: number,
+  weekStartsOn: 0 | 1 | 2 | 3 | 4 | 5 | 6 = 6,
+): JalaliMonthBlock[] {
+  return Array.from({ length: 12 }, (_, m) => buildJalaliMonth(year, m, weekStartsOn));
 }
 
 export function currentJalaliYear(date = new Date()): number {

@@ -9,6 +9,7 @@ export const APP_NAV: NavItem[] = [
   { href: "/tasks", labelKey: "nav.tasks" },
   { href: "/study", labelKey: "nav.study" },
   { href: "/calendar", labelKey: "nav.calendar" },
+  { href: "/reminders", labelKey: "nav.reminders" },
   { href: "/time", labelKey: "nav.time" },
   { href: "/meals", labelKey: "nav.meals" },
   { href: "/family", labelKey: "nav.family" },

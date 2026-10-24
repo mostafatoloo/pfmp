@@ -18,6 +18,9 @@ export type AuthedContext = {
   name: string;
   timezone: string;
   locale: string;
+  calendarSystem: "gregory" | "persian";
+  /** 1 = Monday, 6 = Saturday */
+  weekStartsOn: 1 | 6;
   workspace: PersonalWorkspace;
 };
 
@@ -53,12 +56,23 @@ export async function requireWorkspace(headers: Headers): Promise<AuthedContext>
     locale?: string;
   };
 
+  const prefs = await getPrisma().user.findUnique({
+    where: { id: user.id },
+    select: { timezone: true, locale: true, calendarSystem: true, weekStartsOn: true },
+  });
+
+  const weekStartsOn: 1 | 6 = prefs?.weekStartsOn === 1 ? 1 : 6;
+  const calendarSystem =
+    prefs?.calendarSystem === "gregory" ? "gregory" : "persian";
+
   return {
     userId: user.id,
     email: user.email,
     name: user.name,
-    timezone: user.timezone ?? "UTC",
-    locale: user.locale ?? "en",
+    timezone: prefs?.timezone ?? user.timezone ?? "UTC",
+    locale: prefs?.locale ?? user.locale ?? "en",
+    calendarSystem,
+    weekStartsOn,
     workspace,
   };
 }

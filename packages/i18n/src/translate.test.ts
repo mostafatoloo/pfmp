@@ -22,11 +22,11 @@ describe("i18n locales", () => {
     expect(resolveLocale("xx").code).toBe("en");
   });
 
-  it("resolves finglish with English messages and content RTL", () => {
+  it("resolves finglish as LTR with finglish messages", () => {
     expect(resolveLocale("finglish").code).toBe("finglish");
     expect(directionForLocale("finglish")).toBe("ltr");
-    expect(contentDirectionForLocale("finglish")).toBe("rtl");
-    expect(messagesLocaleFor("finglish")).toBe("en");
+    expect(contentDirectionForLocale("finglish")).toBe("ltr");
+    expect(messagesLocaleFor("finglish")).toBe("finglish");
   });
 
   it("resolves Persian as full-site RTL", () => {
@@ -45,17 +45,18 @@ describe("translator", () => {
     expect(t("common.brand")).toBe("PFMP");
   });
 
-  it("keeps English copy for Finglish", () => {
+  it("uses Finglish Latin-Persian copy", () => {
     const { t, locale } = createTranslator("finglish");
     expect(locale).toBe("finglish");
-    expect(t("nav.tasks")).toBe("Tasks");
-    expect(t("settings.title")).toBe("Settings");
+    expect(t("nav.tasks")).toBe("Kar-ha");
+    expect(t("settings.title")).toBe("Tanzimat");
   });
 
   it("uses Persian copy for fa", () => {
     const { t } = createTranslator("fa");
     expect(t("nav.tasks")).toBe("کارها");
     expect(t("settings.title")).toBe("تنظیمات");
+    expect(t("common.weekdaySat")).toBe("شنبه");
   });
 
   it("interpolates params", () => {

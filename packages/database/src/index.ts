@@ -59,3 +59,4 @@ export {
   type SchoolWeekPattern,
   type StudySettingsDto,
 } from "./timetable-service";
+export { ReminderService, ReminderServiceError } from "./reminder-service";

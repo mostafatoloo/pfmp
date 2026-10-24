@@ -9,7 +9,7 @@ export default async function FamilyPage() {
   const { t } = createTranslator(ctx.locale);
 
   return (
-    <SignedInShell pathname="/family" locale={ctx.locale}>
+    <SignedInShell pathname="/family" locale={ctx.locale} calendarSystem={ctx.calendarSystem} weekStartsOn={ctx.weekStartsOn}>
       <section className="panel">
         <h1>{t("family.title")}</h1>
         <p className="panel-lead">{t("family.subtitle")}</p>

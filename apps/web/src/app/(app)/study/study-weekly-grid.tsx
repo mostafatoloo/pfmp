@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useRef } from "react";
+import { useT } from "@pfmp/i18n/react";
 import {
   WEEK_DAYS,
   fmtMinutes,
@@ -70,6 +71,7 @@ export function StudyWeeklyGrid({
   onResizeCommit,
   onOpenAdvanced,
 }: Props) {
+  const t = useT();
   const trackRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const schoolDays = useMemo(
     () => schoolDaysForPattern(settings.schoolWeekPattern),
@@ -184,15 +186,15 @@ export function StudyWeeklyGrid({
             className={`study-grid__row${isSchool ? " is-school" : ""}`}
           >
             <div className="study-grid__day-label">
-              <strong>{day.label}</strong>
+              <strong>{t(day.labelKey)}</strong>
               <button
                 type="button"
                 className="btn ghost sm"
                 onClick={() => onOpenAdvanced(day.js)}
               >
-                Advanced
+                {t("study.advanced")}
               </button>
-              {isSchool ? <span className="badge brand">School</span> : null}
+              {isSchool ? <span className="badge brand">{t("study.schoolDay")}</span> : null}
             </div>
             <div
               className="study-grid__track"

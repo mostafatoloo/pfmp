@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@pfmp/i18n/react";
 
 type TaskOption = {
   id: string;
@@ -33,6 +34,13 @@ function formatRemaining(total: number) {
   return `${String(m).padStart(2, "0")}:${String(r).padStart(2, "0")}`;
 }
 
+function kindLabel(t: (key: string) => string, kind: string) {
+  if (kind === "work") return t("time.kindWork");
+  if (kind === "short_break") return t("time.kindShortBreak");
+  if (kind === "long_break") return t("time.kindLongBreak");
+  return kind.replace("_", " ");
+}
+
 export function PomodoroBoard({
   tasks,
   config,
@@ -42,6 +50,7 @@ export function PomodoroBoard({
   config: Config;
   recentSessions: SessionRow[];
 }) {
+  const t = useT();
   const router = useRouter();
   const [selectedTaskId, setSelectedTaskId] = useState(tasks[0]?.id ?? "");
   const [mode, setMode] = useState<"work" | "short_break" | "long_break">("work");
@@ -52,7 +61,7 @@ export function PomodoroBoard({
   const [error, setError] = useState<string | null>(null);
   const [localTasks, setLocalTasks] = useState(tasks);
 
-  const selected = localTasks.find((t) => t.id === selectedTaskId) ?? null;
+  const selected = localTasks.find((task) => task.id === selectedTaskId) ?? null;
 
   const durationForMode = useCallback(
     (m: typeof mode) => {
@@ -89,7 +98,7 @@ export function PomodoroBoard({
     });
     const json = await res.json();
     if (!res.ok) {
-      setError(json?.error?.message ?? "Could not start");
+      setError(json?.error?.message ?? t("time.couldNotStart"));
       return;
     }
     setActiveId(json.data.id);
@@ -106,10 +115,10 @@ export function PomodoroBoard({
     await fetch(`/api/v1/pomodoro/sessions/${activeId}/stop`, { method: "POST" });
     if (mode === "work" && selectedTaskId) {
       setLocalTasks((prev) =>
-        prev.map((t) =>
-          t.id === selectedTaskId
-            ? { ...t, completedPomodoros: t.completedPomodoros + 1 }
-            : t,
+        prev.map((task) =>
+          task.id === selectedTaskId
+            ? { ...task, completedPomodoros: task.completedPomodoros + 1 }
+            : task,
         ),
       );
       const nextCount = completedInCycle + 1;
@@ -139,8 +148,11 @@ export function PomodoroBoard({
 
   const progressLabel = useMemo(() => {
     if (!selected?.pomodoroEstimate) return null;
-    return `${selected.completedPomodoros} / ${selected.pomodoroEstimate} pomodoros`;
-  }, [selected]);
+    return t("time.pomodorosProgress", {
+      done: selected.completedPomodoros,
+      estimate: selected.pomodoroEstimate,
+    });
+  }, [selected, t]);
 
   return (
     <div className="stack">
@@ -157,7 +169,11 @@ export function PomodoroBoard({
                 setRemaining(durationForMode(m));
               }}
             >
-              {m === "work" ? "Focus" : m === "short_break" ? "Short break" : "Long break"}
+              {m === "work"
+                ? t("time.focus")
+                : m === "short_break"
+                  ? t("time.shortBreak")
+                  : t("time.longBreak")}
             </button>
           ))}
         </div>
@@ -176,20 +192,20 @@ export function PomodoroBoard({
 
         {mode === "work" ? (
           <div className="field" style={{ textAlign: "start", maxWidth: "28rem", marginInline: "auto" }}>
-            <label htmlFor="pomo-task">Task for this focus</label>
+            <label htmlFor="pomo-task">{t("time.taskForFocus")}</label>
             <select
               id="pomo-task"
               value={selectedTaskId}
               disabled={running}
               onChange={(e) => setSelectedTaskId(e.target.value)}
             >
-              {localTasks.length === 0 ? <option value="">No open tasks</option> : null}
-              {localTasks.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.title}
-                  {t.pomodoroEstimate
-                    ? ` (${t.completedPomodoros}/${t.pomodoroEstimate})`
-                    : ` (${t.completedPomodoros} done)`}
+              {localTasks.length === 0 ? <option value="">{t("time.noOpenTasks")}</option> : null}
+              {localTasks.map((task) => (
+                <option key={task.id} value={task.id}>
+                  {task.title}
+                  {task.pomodoroEstimate
+                    ? ` (${task.completedPomodoros}/${task.pomodoroEstimate})`
+                    : ` (${t("time.doneCount", { count: task.completedPomodoros })})`}
                 </option>
               ))}
             </select>
@@ -199,12 +215,17 @@ export function PomodoroBoard({
 
         <div className="row" style={{ justifyContent: "center" }}>
           {!running ? (
-            <button className="btn" type="button" onClick={() => void start()} disabled={mode === "work" && !selectedTaskId}>
-              Start
+            <button
+              className="btn"
+              type="button"
+              onClick={() => void start()}
+              disabled={mode === "work" && !selectedTaskId}
+            >
+              {t("time.start")}
             </button>
           ) : (
             <button className="btn danger" type="button" onClick={() => void stopEarly()}>
-              Stop
+              {t("time.stop")}
             </button>
           )}
         </div>
@@ -216,26 +237,26 @@ export function PomodoroBoard({
       </div>
 
       <div className="card stack">
-        <h2 style={{ margin: 0, fontSize: "1.05rem" }}>Saved sessions</h2>
+        <h2 style={{ margin: 0, fontSize: "1.05rem" }}>{t("time.savedSessions")}</h2>
         <p className="muted" style={{ margin: 0 }}>
-          Completed Pomodoros are stored on your account for this workspace.
+          {t("time.savedSessionsHint")}
         </p>
         {recentSessions.length === 0 ? (
-          <div className="empty-state">No sessions yet — start a focus block above.</div>
+          <div className="empty-state">{t("time.noSessionsYet")}</div>
         ) : (
           <ul className="list-plain">
             {recentSessions.slice(0, 20).map((s) => {
-              const taskTitle = localTasks.find((t) => t.id === s.taskId)?.title;
+              const taskTitle = localTasks.find((task) => task.id === s.taskId)?.title;
               return (
                 <li key={s.id} className="list-item">
                   <span>
-                    <strong>{s.kind.replace("_", " ")}</strong>
+                    <strong>{kindLabel(t, s.kind)}</strong>
                     {taskTitle ? ` · ${taskTitle}` : ""}
                   </span>
                   <span className="muted bidi-isolate">
                     {s.endedAtUtc
-                      ? `${Math.round((s.durationSeconds ?? 0) / 60)} min`
-                      : "running"}
+                      ? t("time.minutes", { count: Math.round((s.durationSeconds ?? 0) / 60) })
+                      : t("time.running")}
                   </span>
                 </li>
               );

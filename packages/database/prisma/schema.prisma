@@ -26,7 +26,10 @@ model User {
   phoneNumberVerified Boolean @default(false)
   timezone         String    @default("UTC") @db.NVarChar(64)
   locale           String    @default("en") @db.NVarChar(16)
-  calendarSystem   String    @default("gregory") @db.NVarChar(32)
+  /// gregory | persian (Solar Hijri / Shamsi) — default Shamsi
+  calendarSystem   String    @default("persian") @db.NVarChar(32)
+  /// JS getDay(): 1 = Monday, 6 = Saturday (default Saturday)
+  weekStartsOn     Int       @default(6)
   aiAssistantEnabled Boolean @default(true)
   quietHoursStart  String?   @db.NVarChar(5)
   quietHoursEnd    String?   @db.NVarChar(5)
@@ -45,6 +48,7 @@ model User {
   notificationPreferences NotificationPreference[]
   notificationDeliveries  NotificationDelivery[]
   aiConversations         AiConversation[]
+  reminders               Reminder[]
 
   @@index([phoneNumber])
   @@map("user")
@@ -146,6 +150,7 @@ model Workspace {
   pomodoroSessions PomodoroSession[]
   timetableSlots   TimetableSlot[]
   studySettings    StudySettings?
+  reminders        Reminder[]
   notifications    Notification[]
   exportArtifacts  ExportArtifact[]
   jobs             Job[]
@@ -538,6 +543,26 @@ model StudySettings {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@map("StudySettings")
+}
+
+/// User reminders / alarms shown on the calendar
+model Reminder {
+  id           String    @id @db.UniqueIdentifier @default(uuid())
+  workspaceId  String    @db.UniqueIdentifier
+  userId       String    @db.NVarChar(36)
+  title        String    @db.NVarChar(300)
+  notes        String?   @db.NVarChar(Max)
+  remindAtUtc  DateTime  @db.DateTime2
+  createdAtUtc DateTime  @default(now()) @db.DateTime2
+  updatedAtUtc DateTime  @updatedAt @db.DateTime2
+  deletedAtUtc DateTime? @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user      User      @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([workspaceId, remindAtUtc])
+  @@index([userId, remindAtUtc])
+  @@map("Reminder")
 }
 
 // ─── Notifications, jobs, exports ────────────────────────────────────────────

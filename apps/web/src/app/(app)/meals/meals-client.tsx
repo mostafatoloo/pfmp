@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DateField } from "@/components/date-field";
 
 type MealEntry = {
   id: string;
@@ -110,10 +111,9 @@ export function MealsClient({
       <form onSubmit={addMeal} className="card stack">
         <h2 style={{ margin: 0, fontSize: "1.05rem" }}>{labels.planWeek}</h2>
         <div className="row">
-          <input
-            type="date"
+          <DateField
             value={mealDate}
-            onChange={(e) => setMealDate(e.target.value)}
+            onChange={setMealDate}
             required
             style={{
               minHeight: "var(--touch-min)",

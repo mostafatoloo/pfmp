@@ -1,0 +1,15 @@
+export const reminders = {
+  title: "یادآورها",
+  subtitle: "زنگ و یادآورهای تاریخ‌دار در تقویم نمایش داده می‌شوند.",
+  add: "افزودن یادآور",
+  titleLabel: "عنوان",
+  titlePlaceholder: "مثلاً امتحان — حسابان",
+  whenLabel: "زمان",
+  notesLabel: "یادداشت",
+  notesPlaceholder: "جزئیات اختیاری",
+  empty: "هنوز یادآوری نیست. برای امتحان، قرار یا هر چیزی که نباید فراموش شود اضافه کنید.",
+  delete: "حذف",
+  save: "ذخیره",
+  upcoming: "پیش‌رو",
+  past: "گذشته",
+} as const;

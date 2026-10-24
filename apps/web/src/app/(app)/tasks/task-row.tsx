@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DateField } from "@/components/date-field";
 
 type TaskStatus = "inbox" | "planned" | "in_progress" | "completed" | "cancelled";
 
@@ -12,6 +13,7 @@ type Labels = {
   plan: string;
   done: string;
   reopen: string;
+  openTimer: string;
 };
 
 function nextActions(status: TaskStatus, labels: Labels): { label: string; to: TaskStatus }[] {
@@ -48,6 +50,7 @@ export function TaskRow(props: {
   id: string;
   title: string;
   status: TaskStatus;
+  statusLabel: string;
   dueAtUtc: string | null;
   pomodoroEstimate?: number | null;
   pomodorosDone?: number;
@@ -92,7 +95,7 @@ export function TaskRow(props: {
       <div style={{ flex: "1 1 220px" }}>
         <strong>{props.title}</strong>
         <div className="row" style={{ marginBlockStart: "0.35rem" }}>
-          <span className="badge">{props.status.replace("_", " ")}</span>
+          <span className="badge">{props.statusLabel}</span>
           <span className="muted bidi-isolate">
             {props.dueAtUtc ? props.dueAtUtc.slice(0, 10) : "—"}
           </span>
@@ -108,18 +111,18 @@ export function TaskRow(props: {
 
       <div className="row">
         <a className="btn secondary sm" href={`/time?task=${props.id}`}>
-          Timer
+          {props.labels.openTimer}
         </a>
         <form onSubmit={saveDue} className="row">
           <label className="muted" htmlFor={`due-${props.id}`}>
             {props.labels.dueDate}
           </label>
-          <input
+          <DateField
             id={`due-${props.id}`}
-            type="date"
             value={due}
-            onChange={(e) => setDue(e.target.value)}
+            onChange={setDue}
             disabled={busy || props.status === "completed"}
+            allowClear
             style={{
               minHeight: "2.25rem",
               paddingInline: "0.5rem",

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { DateField } from "@/components/date-field";
 
 function dateInputToIso(value: string): string | undefined {
   if (!value) return undefined;
@@ -66,12 +67,12 @@ export function TaskCaptureForm({
         aria-label={labels.placeholder}
         style={fieldStyle}
       />
-      <input
-        type="date"
+      <DateField
         value={due}
-        onChange={(e) => setDue(e.target.value)}
+        onChange={setDue}
         aria-label={labels.dueDate}
         title={labels.dueDate}
+        allowClear
         style={fieldStyle}
       />
       <label className="row" style={{ gap: "0.35rem" }}>

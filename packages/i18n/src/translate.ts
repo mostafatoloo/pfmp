@@ -1,6 +1,7 @@
 import { DEFAULT_LOCALE, LOCALES, messagesLocaleFor } from "./locales";
 import { enMessages, type MessageCatalog } from "./messages/en";
 import { faMessages } from "./messages/fa";
+import { finglishMessages } from "./messages/finglish";
 
 export type TranslateParams = Record<string, string | number>;
 
@@ -9,6 +10,7 @@ export type MissingKeyHandler = (key: string, locale: string) => void;
 const catalogs: Record<string, MessageCatalog> = {
   en: enMessages,
   fa: faMessages,
+  finglish: finglishMessages,
 };
 
 /** Dev/test: collect missing keys for discovery */

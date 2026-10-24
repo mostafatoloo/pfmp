@@ -15,14 +15,11 @@ export default async function StudyPage() {
   ]);
 
   return (
-    <SignedInShell pathname="/study" locale={ctx.locale}>
+    <SignedInShell pathname="/study" locale={ctx.locale} calendarSystem={ctx.calendarSystem} weekStartsOn={ctx.weekStartsOn}>
       <section className="panel stack">
         <div>
           <h1>{t("study.title")}</h1>
-          <p className="panel-lead">
-            Plan the week as a schedule grid: school classes first, then fill free time with study
-            and other activities. Each day keeps its own time divisions.
-          </p>
+          <p className="panel-lead">{t("study.pageLead")}</p>
         </div>
         <StudySchedule
           initialSlots={slots.map((s) => ({

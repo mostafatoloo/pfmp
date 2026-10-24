@@ -39,5 +39,6 @@ export {
 
 export { enMessages, type MessageCatalog } from "./messages/en";
 export { faMessages } from "./messages/fa";
+export { finglishMessages } from "./messages/finglish";
 
 // Client hooks live in `@pfmp/i18n/react` so Server Components can import this entry safely.

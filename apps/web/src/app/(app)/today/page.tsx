@@ -41,7 +41,7 @@ export default async function TodayPage() {
     [];
   if (overdue.length > 0) {
     nextActions.push({
-      title: `Clear ${overdue.length} overdue task${overdue.length === 1 ? "" : "s"}`,
+      title: t("today.clearOverdue", { count: overdue.length }),
       detail: overdue
         .slice(0, 3)
         .map((x) => x.title)
@@ -52,7 +52,7 @@ export default async function TodayPage() {
   }
   if (dueToday.length > 0) {
     nextActions.push({
-      title: `Finish what is due today (${dueToday.length})`,
+      title: t("today.finishDueToday", { count: dueToday.length }),
       detail: dueToday
         .slice(0, 3)
         .map((x) => x.title)
@@ -63,7 +63,7 @@ export default async function TodayPage() {
   }
   if (todaySlots.length > 0) {
     nextActions.push({
-      title: "Follow today’s timetable",
+      title: t("today.followTimetable"),
       detail: todaySlots
         .slice(0, 3)
         .map((s) => `${fmtMins(s.startMinutes)} ${s.title}`)
@@ -74,7 +74,7 @@ export default async function TodayPage() {
   }
   if (focusCandidates.length > 0) {
     nextActions.push({
-      title: "Run a Pomodoro on a planned task",
+      title: t("today.runPomodoro"),
       detail: focusCandidates
         .slice(0, 2)
         .map((x) => x.title)
@@ -85,25 +85,28 @@ export default async function TodayPage() {
   }
   if (nextActions.length === 0) {
     nextActions.push({
-      title: "Plan the day",
-      detail: "Add a task with a due date, or block study time on the weekly timetable.",
+      title: t("today.planTheDay"),
+      detail: t("today.planTheDayDetail"),
       href: "/tasks",
       priority: "medium",
     });
   }
 
   return (
-    <SignedInShell pathname="/today" locale={ctx.locale}>
+    <SignedInShell
+      pathname="/today"
+      locale={ctx.locale}
+      calendarSystem={ctx.calendarSystem}
+      weekStartsOn={ctx.weekStartsOn}
+    >
       <section className="panel stack">
         <div>
           <h1>{t("today.title")}</h1>
-          <p className="panel-lead">
-            {jalaliToday}. Here is what matters <em>today</em> — start at the top and work down.
-          </p>
+          <p className="panel-lead">{t("today.lead", { date: jalaliToday })}</p>
         </div>
 
         <div className="card stack">
-          <h2 style={{ margin: 0, fontSize: "1.1rem" }}>Do this next</h2>
+          <h2 style={{ margin: 0, fontSize: "1.1rem" }}>{t("today.doThisNext")}</h2>
           <ol className="list-plain" style={{ listStyle: "decimal", paddingInlineStart: "1.25rem" }}>
             {nextActions.map((a) => (
               <li key={a.title} style={{ marginBottom: "0.75rem" }}>
@@ -112,7 +115,7 @@ export default async function TodayPage() {
                 </Link>
                 <div className="muted">{a.detail}</div>
                 <span className={`badge ${a.priority === "high" ? "warning" : "brand"}`}>
-                  {a.priority === "high" ? "Priority" : "Suggested"}
+                  {a.priority === "high" ? t("today.priority") : t("today.suggested")}
                 </span>
               </li>
             ))}
@@ -121,11 +124,11 @@ export default async function TodayPage() {
 
         <div className="row" style={{ alignItems: "stretch" }}>
           <div className="card stack" style={{ flex: "1 1 240px" }}>
-            <h2 style={{ margin: 0, fontSize: "1.05rem" }}>Today’s classes & study</h2>
+            <h2 style={{ margin: 0, fontSize: "1.05rem" }}>{t("today.classesAndStudy")}</h2>
             {todaySlots.length === 0 ? (
               <p className="muted" style={{ margin: 0 }}>
-                No timetable entries for this weekday.{" "}
-                <Link href="/study">Build your weekly plan</Link>.
+                {t("today.noTimetable")}{" "}
+                <Link href="/study">{t("today.buildWeeklyPlan")}</Link>.
               </p>
             ) : (
               <ul className="list-plain">
@@ -145,23 +148,21 @@ export default async function TodayPage() {
           </div>
 
           <div className="card stack" style={{ flex: "1 1 240px" }}>
-            <h2 style={{ margin: 0, fontSize: "1.05rem" }}>Focus progress</h2>
+            <h2 style={{ margin: 0, fontSize: "1.05rem" }}>{t("today.focusProgress")}</h2>
             <p className="muted" style={{ margin: 0 }}>
-              {sessionsToday.length} focus session{sessionsToday.length === 1 ? "" : "s"} completed
-              today.
+              {t("today.focusSessions", { count: sessionsToday.length })}
             </p>
             <Link className="btn secondary" href="/time">
-              Open timer
+              {t("today.openTimer")}
             </Link>
           </div>
         </div>
 
         <div className="card stack">
-          <h2 style={{ margin: 0, fontSize: "1.05rem" }}>Due & overdue</h2>
+          <h2 style={{ margin: 0, fontSize: "1.05rem" }}>{t("today.dueAndOverdue")}</h2>
           {dueToday.length === 0 && overdue.length === 0 ? (
             <p className="muted" style={{ margin: 0 }}>
-              Nothing due today. Capture upcoming work in <Link href="/tasks">Tasks</Link> or check{" "}
-              <Link href="/calendar">Calendar</Link> for the week ahead.
+              {t("today.nothingDue")}
             </p>
           ) : (
             <ul className="list-plain">
@@ -169,7 +170,7 @@ export default async function TodayPage() {
                 <li key={task.id} className="list-item">
                   <span>{task.title}</span>
                   <span className={`badge ${overdue.includes(task) ? "danger" : "warning"}`}>
-                    {overdue.includes(task) ? "Overdue" : "Due today"}
+                    {overdue.includes(task) ? t("today.overdue") : t("today.dueToday")}
                   </span>
                 </li>
               ))}

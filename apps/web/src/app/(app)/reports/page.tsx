@@ -7,7 +7,7 @@ export default async function ReportsPage() {
   const ctx = await requirePageWorkspace(await headers());
   const { t } = createTranslator(ctx.locale);
   return (
-    <SignedInShell pathname="/reports" locale={ctx.locale}>
+    <SignedInShell pathname="/reports" locale={ctx.locale} calendarSystem={ctx.calendarSystem} weekStartsOn={ctx.weekStartsOn}>
       <section className="panel stack">
         <div>
           <h1>{t("reports.title")}</h1>

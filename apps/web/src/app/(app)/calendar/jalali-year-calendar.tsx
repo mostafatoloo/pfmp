@@ -3,13 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { getMonth, getYear } from "date-fns-jalali";
 import {
-  IR_WEEKDAY_LABELS,
   buildJalaliYear,
   currentJalaliYear,
   jalaliKey,
-  occasionsForDay,
   type JalaliMonthBlock,
 } from "@pfmp/calendar";
+import { useT } from "@pfmp/i18n/react";
 
 export type CalendarEvent = {
   id: string;
@@ -27,26 +26,28 @@ function MonthCard({
   events,
   expanded,
   onToggle,
+  weekdayLabels,
 }: {
   month: JalaliMonthBlock;
   events: CalendarEvent[];
   expanded: boolean;
   onToggle: () => void;
+  weekdayLabels: string[];
 }) {
+  const t = useT();
   const monthEventCount = useMemo(() => {
     let n = 0;
     for (const w of month.weeks) {
       for (const d of w.days) {
         if (!d.inMonth) continue;
         n += eventsForDay(events, jalaliKey(d.date)).length;
-        n += occasionsForDay(d.jalaliMonth, d.jalaliDay).length;
       }
     }
     return n;
   }, [month, events]);
 
   return (
-    <div className="card stack" style={{ gap: "0.75rem" }}>
+    <div className="card stack content-dir" style={{ gap: "0.75rem" }}>
       <button
         type="button"
         className="row"
@@ -65,11 +66,11 @@ function MonthCard({
       >
         <span>
           <strong>
-            {month.monthName} {month.year}
+            {t(`calendar.monthJalali${month.monthIndex}` as "calendar.monthJalali0")} {month.year}
           </strong>
           {monthEventCount > 0 ? (
             <span className="badge brand" style={{ marginInlineStart: "0.5rem" }}>
-              {monthEventCount} items
+              {t("calendar.itemsCount", { count: monthEventCount })}
             </span>
           ) : null}
         </span>
@@ -90,8 +91,8 @@ function MonthCard({
               textAlign: "center",
             }}
           >
-            {IR_WEEKDAY_LABELS.map((d) => (
-              <div key={d}>{d.slice(0, 3)}</div>
+            {weekdayLabels.map((d) => (
+              <div key={d}>{d}</div>
             ))}
           </div>
 
@@ -99,18 +100,11 @@ function MonthCard({
             const weekItems = week.days.flatMap((d) => {
               if (!d.inMonth) return [];
               const key = jalaliKey(d.date);
-              return [
-                ...occasionsForDay(d.jalaliMonth, d.jalaliDay).map((o) => ({
-                  day: d.jalaliDay,
-                  label: o.title,
-                  kind: "occasion",
-                })),
-                ...eventsForDay(events, key).map((e) => ({
-                  day: d.jalaliDay,
-                  label: e.title,
-                  kind: e.kind,
-                })),
-              ];
+              return eventsForDay(events, key).map((e) => ({
+                day: d.jalaliDay,
+                label: e.title,
+                kind: e.kind,
+              }));
             });
 
             return (
@@ -125,10 +119,7 @@ function MonthCard({
                   {week.days.map((d) => {
                     const key = jalaliKey(d.date);
                     const dayEvents = d.inMonth ? eventsForDay(events, key) : [];
-                    const occasions = d.inMonth
-                      ? occasionsForDay(d.jalaliMonth, d.jalaliDay)
-                      : [];
-                    const busy = dayEvents.length + occasions.length;
+                    const busy = dayEvents.length;
                     return (
                       <div
                         key={key + String(d.inMonth)}
@@ -149,7 +140,7 @@ function MonthCard({
                         <div style={{ fontWeight: 600 }}>{d.inMonth ? d.jalaliDay : ""}</div>
                         {busy > 0 ? (
                           <div className="muted" style={{ fontSize: "0.65rem" }}>
-                            {busy} prep
+                            {busy}
                           </div>
                         ) : null}
                       </div>
@@ -158,33 +149,21 @@ function MonthCard({
                 </div>
 
                 {weekItems.length > 0 ? (
-                  <div
-                    style={{
-                      borderInlineStart: "3px solid var(--brand)",
-                      paddingInlineStart: "0.75rem",
-                    }}
-                  >
-                    <div className="muted" style={{ fontSize: "0.75rem", marginBottom: "0.25rem" }}>
-                      Week {week.weekIndex + 1} schedule
-                    </div>
-                    <ul className="list-plain" style={{ gap: "0.35rem" }}>
-                      {weekItems.map((item, i) => (
-                        <li
-                          key={`${item.day}-${item.label}-${i}`}
-                          className="muted"
-                          style={{ fontSize: "0.85rem" }}
-                        >
-                          <span className="badge">{item.day}</span> {item.label}{" "}
-                          <span className="badge">{item.kind}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <p className="muted" style={{ margin: 0, fontSize: "0.8rem" }}>
-                    Week {week.weekIndex + 1}: nothing scheduled — a lighter prep week.
-                  </p>
-                )}
+                  <ul className="list-plain" style={{ gap: "0.35rem" }}>
+                    {weekItems.map((item, i) => (
+                      <li
+                        key={`${item.day}-${item.label}-${i}`}
+                        className="muted user-text"
+                        style={{ fontSize: "0.85rem" }}
+                      >
+                        <span className="badge">{item.day}</span> {item.label}{" "}
+                        <span className="badge">
+                          {item.kind === "reminder" ? t("calendar.reminder") : item.kind}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
               </div>
             );
           })}
@@ -197,12 +176,36 @@ function MonthCard({
 export function JalaliYearCalendar({
   events,
   initialYear,
+  weekStartsOn = 6,
 }: {
   events: CalendarEvent[];
   initialYear?: number;
+  weekStartsOn?: 1 | 6;
 }) {
+  const t = useT();
   const [year, setYear] = useState(initialYear ?? currentJalaliYear());
   const [openMonths, setOpenMonths] = useState<Record<number, boolean>>({});
+
+  const weekdayLabels =
+    weekStartsOn === 1
+      ? [
+          t("common.weekdayMonShort"),
+          t("common.weekdayTueShort"),
+          t("common.weekdayWedShort"),
+          t("common.weekdayThuShort"),
+          t("common.weekdayFriShort"),
+          t("common.weekdaySatShort"),
+          t("common.weekdaySunShort"),
+        ]
+      : [
+          t("common.weekdaySatShort"),
+          t("common.weekdaySunShort"),
+          t("common.weekdayMonShort"),
+          t("common.weekdayTueShort"),
+          t("common.weekdayWedShort"),
+          t("common.weekdayThuShort"),
+          t("common.weekdayFriShort"),
+        ];
 
   useEffect(() => {
     if (year === getYear(new Date())) {
@@ -212,7 +215,7 @@ export function JalaliYearCalendar({
     }
   }, [year]);
 
-  const months = useMemo(() => buildJalaliYear(year), [year]);
+  const months = useMemo(() => buildJalaliYear(year, weekStartsOn), [year, weekStartsOn]);
 
   return (
     <div className="stack">
@@ -220,15 +223,13 @@ export function JalaliYearCalendar({
         <button type="button" className="btn secondary sm" onClick={() => setYear((y) => y - 1)}>
           ← {year - 1}
         </button>
-        <h2 style={{ margin: 0, fontSize: "1.15rem" }}>Solar Hijri {year}</h2>
+        <h2 style={{ margin: 0, fontSize: "1.15rem" }}>
+          {t("settings.calendarPersian")} {year}
+        </h2>
         <button type="button" className="btn secondary sm" onClick={() => setYear((y) => y + 1)}>
           {year + 1} →
         </button>
       </div>
-      <p className="muted" style={{ margin: 0 }}>
-        Expand a month to see weeks (Saturday–Friday) and what to prepare for — occasions, tasks, and
-        scheduled blocks.
-      </p>
       {months.map((m) => {
         const expanded = Boolean(openMonths[m.monthIndex]);
         return (
@@ -237,6 +238,7 @@ export function JalaliYearCalendar({
             month={m}
             events={events}
             expanded={expanded}
+            weekdayLabels={weekdayLabels}
             onToggle={() =>
               setOpenMonths((prev) => ({
                 ...prev,

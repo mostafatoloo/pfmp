@@ -25,14 +25,16 @@ export default async function TimePage() {
   );
 
   return (
-    <SignedInShell pathname="/time" locale={ctx.locale}>
+    <SignedInShell
+      pathname="/time"
+      locale={ctx.locale}
+      calendarSystem={ctx.calendarSystem}
+      weekStartsOn={ctx.weekStartsOn}
+    >
       <section className="panel stack">
         <div>
           <h1>{t("time.title")}</h1>
-          <p className="panel-lead">
-            Pomodoro focus like a dedicated timer app: pick a task, run focus/break sessions, and keep
-            a history under your account.
-          </p>
+          <p className="panel-lead">{t("time.pageLead")}</p>
         </div>
         <PomodoroBoard
           tasks={taskOptions}

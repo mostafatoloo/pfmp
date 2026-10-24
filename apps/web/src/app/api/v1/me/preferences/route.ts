@@ -9,6 +9,7 @@ export const PATCH = withAuth(async (request, ctx) => {
     z.object({
       aiAssistantEnabled: z.boolean().optional(),
       calendarSystem: z.enum(["gregory", "persian"]).optional(),
+      weekStartsOn: z.union([z.literal(1), z.literal(6)]).optional(),
       locale: z.enum(["en", "finglish", "fa"]).optional(),
       quietHoursStart: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
       quietHoursEnd: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
@@ -21,6 +22,7 @@ export const PATCH = withAuth(async (request, ctx) => {
     data: {
       aiAssistantEnabled: body.aiAssistantEnabled,
       calendarSystem: body.calendarSystem,
+      weekStartsOn: body.weekStartsOn,
       locale: body.locale,
       quietHoursStart: body.quietHoursStart === undefined ? undefined : body.quietHoursStart,
       quietHoursEnd: body.quietHoursEnd === undefined ? undefined : body.quietHoursEnd,
@@ -32,6 +34,7 @@ export const PATCH = withAuth(async (request, ctx) => {
     data: {
       aiAssistantEnabled: user.aiAssistantEnabled,
       calendarSystem: user.calendarSystem,
+      weekStartsOn: user.weekStartsOn,
       locale: user.locale,
       quietHoursStart: user.quietHoursStart,
       quietHoursEnd: user.quietHoursEnd,

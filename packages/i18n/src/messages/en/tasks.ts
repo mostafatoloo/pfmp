@@ -2,6 +2,8 @@ export const tasks = {
   title: "Tasks",
   subtitle:
     "Capture a task (optional due). Use Set due to schedule, then Start to begin work.",
+  pageLead:
+    "Capture work with an optional due date and how many Pomodoro sessions it needs. Run those sessions in the Timer tab.",
   capturePlaceholder: "What needs doing?",
   add: "Add task",
   noTasks: "No tasks yet.",
@@ -22,4 +24,6 @@ export const tasks = {
   assignee: "Assignee",
   recurrence: "Recurrence",
   confirmDelete: "Delete this task?",
+  pomodoros: "Pomodoros",
+  openTimer: "Timer",
 } as const;

@@ -1,0 +1,15 @@
+export const reminders = {
+  title: "Reminders",
+  subtitle: "Alarms and dated reminders appear on your calendar.",
+  add: "Add reminder",
+  titleLabel: "Title",
+  titlePlaceholder: "e.g. Exam — Calculus",
+  whenLabel: "When",
+  notesLabel: "Notes",
+  notesPlaceholder: "Optional details",
+  empty: "No reminders yet. Add one for an exam, appointment, or anything you mustn’t forget.",
+  delete: "Delete",
+  save: "Save",
+  upcoming: "Upcoming",
+  past: "Past",
+} as const;

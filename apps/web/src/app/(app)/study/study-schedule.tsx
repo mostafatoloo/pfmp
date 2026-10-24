@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@pfmp/i18n/react";
 import { ActivityDialog, slotToDraft } from "./study-activity-dialog";
 import { StudyAdvancedDay } from "./study-advanced-day";
 import { StudySchoolSetup } from "./study-school-setup";
@@ -30,6 +31,7 @@ export function StudySchedule({
   initialSlots: TimetableSlotDto[];
   initialSettings: StudySettingsDto;
 }) {
+  const t = useT();
   const router = useRouter();
   const [slots, setSlots] = useState(initialSlots);
   const [settings, setSettings] = useState(initialSettings);
@@ -39,9 +41,13 @@ export function StudySchedule({
   const [editTarget, setEditTarget] = useState<EditTarget | null>(null);
   const [advancedDay, setAdvancedDay] = useState<number | null>(null);
 
-  const dayLabel = useCallback((js: number) => {
-    return WEEK_DAYS.find((d) => d.js === js)?.label ?? "Day";
-  }, []);
+  const dayLabel = useCallback(
+    (js: number) => {
+      const day = WEEK_DAYS.find((d) => d.js === js);
+      return day ? t(day.labelKey) : "";
+    },
+    [t],
+  );
 
   const refresh = () => router.refresh();
 
@@ -205,11 +211,9 @@ export function StudySchedule({
       <section className="card stack">
         <div className="row" style={{ justifyContent: "space-between", alignItems: "flex-start" }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: "1.1rem" }}>Weekly schedule</h2>
+            <h2 style={{ margin: 0, fontSize: "1.1rem" }}>{t("study.weeklySchedule")}</h2>
             <p className="muted" style={{ margin: "0.35rem 0 0", maxWidth: "40rem" }}>
-              Each day has its own time blocks — dividers do not run through the whole week.
-              Click empty space to add an activity, click a block to edit, drag a block edge to
-              resize. Default blocks: {settings.defaultColumnCount}.
+              {t("study.weeklyLead")} ({settings.defaultColumnCount})
             </p>
           </div>
         </div>

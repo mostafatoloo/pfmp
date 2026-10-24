@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useT } from "@pfmp/i18n/react";
 import {
   WEEK_DAYS,
   minutesToTimeInput,
@@ -23,6 +24,7 @@ export function StudySchoolSetup({
   onSaveSettings,
   onApplySchoolDay,
 }: Props) {
+  const t = useT();
   const [schoolStart, setSchoolStart] = useState(minutesToTimeInput(settings.schoolStartMinutes));
   const [schoolEnd, setSchoolEnd] = useState(minutesToTimeInput(settings.schoolEndMinutes));
   const [pattern, setPattern] = useState<SchoolWeekPattern>(settings.schoolWeekPattern);
@@ -41,24 +43,22 @@ export function StudySchoolSetup({
       schoolWeekPattern: pattern,
       defaultColumnCount: columns,
     });
-    setMessage("School preferences saved.");
+    setMessage(t("settings.prefsSaved"));
   }
 
   return (
     <section className="study-school card stack">
       <div>
-        <h2 style={{ margin: 0, fontSize: "1.1rem" }}>School schedule</h2>
+        <h2 style={{ margin: 0, fontSize: "1.1rem" }}>{t("study.schoolSchedule")}</h2>
         <p className="muted" style={{ margin: "0.35rem 0 0" }}>
-          Set school hours and week pattern, then enter each school day as a list of subjects
-          (for example: Calculus, Physics, Calculus, History). Subjects split the school window
-          evenly. Remaining empty time on the grid stays free for study and other activities.
+          {t("study.schoolLead")}
         </p>
       </div>
 
       <form onSubmit={(e) => void savePrefs(e)} className="stack">
         <div className="row study-school__prefs">
           <label className="study-inline-field">
-            <span>Starts</span>
+            <span>{t("study.starts")}</span>
             <input
               type="time"
               value={schoolStart}
@@ -67,7 +67,7 @@ export function StudySchoolSetup({
             />
           </label>
           <label className="study-inline-field">
-            <span>Ends</span>
+            <span>{t("study.ends")}</span>
             <input
               type="time"
               value={schoolEnd}
@@ -76,28 +76,27 @@ export function StudySchoolSetup({
             />
           </label>
           <label className="study-inline-field">
-            <span>School week</span>
+            <span>{t("study.schoolWeek")}</span>
             <select
               value={pattern}
               onChange={(e) => setPattern(e.target.value as SchoolWeekPattern)}
             >
-              <option value="sat_thu">Saturday – Thursday</option>
-              <option value="sat_wed">Saturday – Wednesday</option>
+              <option value="sat_thu">{t("study.schoolWeekSatThu")}</option>
+              <option value="sat_wed">{t("study.schoolWeekSatWed")}</option>
             </select>
           </label>
           <label className="study-inline-field">
-            <span>Default blocks</span>
+            <span>{t("study.defaultBlocks")}</span>
             <input
               type="number"
               min={1}
               max={16}
               value={columns}
               onChange={(e) => setColumns(Number(e.target.value) || 7)}
-              title="Default number of equal time blocks when adding on empty space (not fixed columns)"
             />
           </label>
           <button type="submit" className="btn secondary" disabled={busy}>
-            Save preferences
+            {t("study.savePreferences")}
           </button>
         </div>
       </form>
@@ -105,14 +104,14 @@ export function StudySchoolSetup({
       <div className="study-school__days content-dir stack">
         {WEEK_DAYS.filter((d) => schoolDays.has(d.js)).map((day) => (
           <div key={day.js} className="study-school__day-row">
-            <strong className="study-school__day-name">{day.label}</strong>
+            <strong className="study-school__day-name">{t(day.labelKey)}</strong>
             <input
               value={daySubjects[day.js] ?? ""}
               onChange={(e) =>
                 setDaySubjects((prev) => ({ ...prev, [day.js]: e.target.value }))
               }
-              placeholder="Calculus, Physics, Calculus, History"
-              aria-label={`${day.label} subjects`}
+              placeholder={t("study.subjectsExample")}
+              aria-label={t(day.labelKey)}
             />
             <button
               type="button"
@@ -124,11 +123,11 @@ export function StudySchoolSetup({
                   .map((s) => s.trim())
                   .filter(Boolean);
                 void onApplySchoolDay(day.js, subjects).then(() =>
-                  setMessage(`${day.label} school timetable applied.`),
+                  setMessage(t("settings.prefsSaved")),
                 );
               }}
             >
-              Apply
+              {t("study.apply")}
             </button>
           </div>
         ))}
