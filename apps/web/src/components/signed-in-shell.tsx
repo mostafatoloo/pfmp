@@ -12,7 +12,7 @@ export function SignedInShell({
   locale?: string;
 }) {
   const { t } = createTranslator(locale);
-  const { dir } = documentLocaleAttrs(locale);
+  const { lang, dir, contentDir } = documentLocaleAttrs(locale);
   const labels: Record<string, string> = {
     "nav.primary": t("nav.primary"),
   };
@@ -25,7 +25,9 @@ export function SignedInShell({
       pathname={pathname}
       brand={t("common.brand")}
       locale={locale}
+      lang={lang}
       dir={dir}
+      contentDir={contentDir}
       labels={labels}
     >
       {children}

@@ -32,4 +32,9 @@ export const enMessages = {
   errors,
 } as const;
 
-export type MessageCatalog = typeof enMessages;
+/** Shape shared by all locales — values are strings (not English string literals). */
+export type MessageCatalog = {
+  [Namespace in keyof typeof enMessages]: {
+    [Key in keyof (typeof enMessages)[Namespace]]: string;
+  };
+};

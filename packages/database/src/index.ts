@@ -50,4 +50,12 @@ export {
   AssistantContextService,
   type AssistantSummary,
 } from "./assistant-context-service";
-export { TimetableService, TimetableServiceError, type TimetableKind } from "./timetable-service";
+export {
+  TimetableService,
+  TimetableServiceError,
+  DEFAULT_STUDY_SETTINGS,
+  schoolDaysForPattern,
+  type TimetableKind,
+  type SchoolWeekPattern,
+  type StudySettingsDto,
+} from "./timetable-service";

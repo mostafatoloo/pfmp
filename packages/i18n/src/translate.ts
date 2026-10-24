@@ -1,5 +1,6 @@
-import { DEFAULT_LOCALE, LOCALES } from "./locales";
+import { DEFAULT_LOCALE, LOCALES, messagesLocaleFor } from "./locales";
 import { enMessages, type MessageCatalog } from "./messages/en";
+import { faMessages } from "./messages/fa";
 
 export type TranslateParams = Record<string, string | number>;
 
@@ -7,6 +8,7 @@ export type MissingKeyHandler = (key: string, locale: string) => void;
 
 const catalogs: Record<string, MessageCatalog> = {
   en: enMessages,
+  fa: faMessages,
 };
 
 /** Dev/test: collect missing keys for discovery */
@@ -69,12 +71,13 @@ export type Translator = {
 };
 
 export function createTranslator(localeCode: string = DEFAULT_LOCALE): Translator {
-  const locale = LOCALES[localeCode]?.enabled ? localeCode : DEFAULT_LOCALE;
-  const primary = catalogs[locale] ?? catalogs[DEFAULT_LOCALE]!;
+  const uiLocale = LOCALES[localeCode]?.enabled ? localeCode : DEFAULT_LOCALE;
+  const catalogLocale = messagesLocaleFor(uiLocale);
+  const primary = catalogs[catalogLocale] ?? catalogs[DEFAULT_LOCALE]!;
   const fallback = catalogs[DEFAULT_LOCALE]!;
 
   return {
-    locale,
+    locale: uiLocale,
     t(key, params) {
       const count = params?.count;
       const tryKeys =
@@ -84,16 +87,16 @@ export function createTranslator(localeCode: string = DEFAULT_LOCALE): Translato
         const hit = lookup(primary as unknown as Nested, k);
         if (hit !== undefined) return interpolate(hit, params);
       }
-      if (locale !== DEFAULT_LOCALE) {
+      if (catalogLocale !== DEFAULT_LOCALE) {
         for (const k of tryKeys) {
           const hit = lookup(fallback as unknown as Nested, k);
           if (hit !== undefined) {
-            onMissing(k, locale);
+            onMissing(k, uiLocale);
             return interpolate(hit, params);
           }
         }
       }
-      onMissing(key, locale);
+      onMissing(key, uiLocale);
       return key;
     },
   };

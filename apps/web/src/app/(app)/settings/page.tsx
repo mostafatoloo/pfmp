@@ -2,6 +2,7 @@ import { SignedInShell } from "@/components/signed-in-shell";
 import { headers } from "next/headers";
 import { requirePageWorkspace } from "@/lib/require-page-auth";
 import { createTranslator, enabledLocales } from "@pfmp/i18n";
+import { LanguageForm } from "./language-form";
 import { SignOutButton } from "./sign-out-button";
 import { TelegramLinkPanel } from "./telegram-link-panel";
 
@@ -32,19 +33,20 @@ export default async function SettingsPage() {
               <dd style={{ margin: 0 }}>{ctx.timezone}</dd>
             </div>
             <div>
-              <dt className="muted">{t("common.language")}</dt>
-              <dd style={{ margin: 0 }}>
-                <select disabled aria-label={t("common.language")} defaultValue={ctx.locale}>
-                  {languages.map((l) => (
-                    <option key={l.code} value={l.code}>
-                      {l.nativeName}
-                    </option>
-                  ))}
-                </select>
-                <p className="muted" style={{ marginBlockStart: "0.5rem" }}>
-                  {t("settings.languageHint")}
-                </p>
-              </dd>
+              <LanguageForm
+                initialLocale={ctx.locale}
+                languageLabel={t("common.language")}
+                hint={t("settings.languageHint")}
+                options={languages.map((l) => ({
+                  code: l.code,
+                  label:
+                    l.code === "finglish"
+                      ? "Finglish (English UI · RTL content)"
+                      : l.code === "fa"
+                        ? `${l.nativeName} / Persian`
+                        : l.nativeName,
+                }))}
+              />
             </div>
             <div>
               <dt className="muted">{t("settings.workspace")}</dt>

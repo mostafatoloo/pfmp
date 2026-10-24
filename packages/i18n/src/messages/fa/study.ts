@@ -1,0 +1,17 @@
+export const study = {
+  title: "مطالعه",
+  subtitle: "برنامهٔ هفتگی، ساعات مدرسه و بلوک‌های مطالعه.",
+  terms: "ترم‌ها",
+  courses: "درس‌ها",
+  topics: "موضوعات",
+  assessments: "ارزیابی‌ها",
+  planProposal: "پیشنهاد برنامه",
+  generatePlan: "تولید برنامه",
+  acceptPlan: "پذیرش برنامه",
+  rejectPlan: "رد برنامه",
+  weeklySchedule: "برنامهٔ هفتگی",
+  schoolSchedule: "برنامهٔ مدرسه",
+  advanced: "پیشرفته",
+  addActivity: "افزودن فعالیت",
+  editActivity: "ویرایش فعالیت",
+} as const;

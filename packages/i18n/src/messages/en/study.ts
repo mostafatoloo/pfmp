@@ -1,6 +1,6 @@
 export const study = {
   title: "Study",
-  subtitle: "Terms, courses, topics, and schedule proposals.",
+  subtitle: "Weekly timetable, school schedule, and study blocks.",
   terms: "Terms",
   courses: "Courses",
   topics: "Topics",
@@ -9,4 +9,9 @@ export const study = {
   generatePlan: "Generate plan",
   acceptPlan: "Accept plan",
   rejectPlan: "Reject plan",
+  weeklySchedule: "Weekly schedule",
+  schoolSchedule: "School schedule",
+  advanced: "Advanced",
+  addActivity: "Add activity",
+  editActivity: "Edit activity",
 } as const;

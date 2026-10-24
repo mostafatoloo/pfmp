@@ -9,7 +9,7 @@ export const PATCH = withAuth(async (request, ctx) => {
     z.object({
       aiAssistantEnabled: z.boolean().optional(),
       calendarSystem: z.enum(["gregory", "persian"]).optional(),
-      locale: z.enum(["en"]).optional(),
+      locale: z.enum(["en", "finglish", "fa"]).optional(),
       quietHoursStart: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
       quietHoursEnd: z.string().regex(/^\d{2}:\d{2}$/).nullable().optional(),
       timezone: z.string().min(1).max(64).optional(),

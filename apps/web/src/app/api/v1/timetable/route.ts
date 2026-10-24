@@ -1,4 +1,8 @@
-import { getPrisma, TimetableService, TimetableServiceError } from "@pfmp/database";
+import {
+  getPrisma,
+  TimetableService,
+  TimetableServiceError,
+} from "@pfmp/database";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { AppError, readJson, withAuth } from "@/lib/api-handler";
@@ -7,6 +11,7 @@ function serialize(row: {
   id: string;
   kind: string;
   title: string;
+  description: string | null;
   dayOfWeek: number;
   startMinutes: number;
   endMinutes: number;
@@ -17,6 +22,7 @@ function serialize(row: {
     id: row.id,
     kind: row.kind,
     title: row.title,
+    description: row.description,
     dayOfWeek: row.dayOfWeek,
     startMinutes: row.startMinutes,
     endMinutes: row.endMinutes,
@@ -26,8 +32,12 @@ function serialize(row: {
 }
 
 export const GET = withAuth(async (_req, ctx) => {
-  const rows = await new TimetableService(getPrisma()).list(ctx.workspace.id);
-  return NextResponse.json({ data: rows.map(serialize) });
+  const service = new TimetableService(getPrisma());
+  const [rows, settings] = await Promise.all([
+    service.list(ctx.workspace.id),
+    service.getSettings(ctx.workspace.id),
+  ]);
+  return NextResponse.json({ data: { slots: rows.map(serialize), settings } });
 });
 
 export const POST = withAuth(async (req, ctx) => {
@@ -36,6 +46,7 @@ export const POST = withAuth(async (req, ctx) => {
     z.object({
       kind: z.enum(["school_class", "study_session", "other_class"]),
       title: z.string().min(1).max(300),
+      description: z.string().max(500).nullable().optional(),
       dayOfWeek: z.number().int().min(0).max(6),
       startMinutes: z.number().int().min(0).max(1439),
       endMinutes: z.number().int().min(1).max(1440),

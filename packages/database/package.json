@@ -29,12 +29,12 @@
     "@pfmp/export-engine": "workspace:*",
     "@prisma/adapter-mssql": "7.10.1",
     "@prisma/client": "7.10.1",
+    "dotenv": "^16.5.0",
     "mssql": "^11.0.1"
   },
 
   "devDependencies": {
     "@types/node": "^22.15.21",
-    "dotenv": "^16.5.0",
     "prisma": "7.10.1",
     "typescript": "^5.8.3",
     "vitest": "^3.1.4"

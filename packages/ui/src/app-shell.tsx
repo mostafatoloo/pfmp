@@ -8,7 +8,12 @@ export type AppShellProps = {
   brand?: string;
   pathname?: string;
   locale?: string;
+  /** BCP 47 lang for accessibility / font selection */
+  lang?: string;
+  /** Chrome / navigation direction */
   dir?: "ltr" | "rtl";
+  /** Tables, grids, and user-authored content direction (Finglish: rtl while chrome stays ltr) */
+  contentDir?: "ltr" | "rtl";
   /** Resolved nav labels (already translated by caller) */
   labels?: Record<string, string>;
   footer?: ReactNode;
@@ -20,7 +25,9 @@ export function AppShell({
   brand = "PFMP",
   pathname = "/today",
   locale = "en",
+  lang = "en",
   dir = "ltr",
+  contentDir = "ltr",
   labels = {},
   footer,
   headerExtra,
@@ -31,8 +38,10 @@ export function AppShell({
   return (
     <div
       className="pfmp-shell"
+      lang={lang}
       dir={dir}
       data-locale={locale}
+      data-content-dir={contentDir}
       data-nav-open={navOpen ? "true" : "false"}
     >
       <header className="pfmp-header">

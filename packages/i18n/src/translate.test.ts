@@ -4,20 +4,35 @@ import {
   createTranslator,
   getMissingKeys,
 } from "./translate";
-import { enabledLocales, resolveLocale, directionForLocale } from "./locales";
+import {
+  contentDirectionForLocale,
+  enabledLocales,
+  resolveLocale,
+  directionForLocale,
+  messagesLocaleFor,
+} from "./locales";
 import { formatDurationSeconds, formatNumber, relativeDayKey } from "./format";
 
 describe("i18n locales", () => {
-  it("enables only English in production registry", () => {
-    expect(enabledLocales().map((l) => l.code)).toEqual(["en"]);
+  it("exposes English, Finglish, and Persian", () => {
+    expect(enabledLocales().map((l) => l.code).sort()).toEqual(["en", "fa", "finglish"]);
   });
 
   it("falls back unknown locale to English", () => {
     expect(resolveLocale("xx").code).toBe("en");
   });
 
-  it("does not expose disabled fa as enabled", () => {
-    expect(resolveLocale("fa").code).toBe("en");
+  it("resolves finglish with English messages and content RTL", () => {
+    expect(resolveLocale("finglish").code).toBe("finglish");
+    expect(directionForLocale("finglish")).toBe("ltr");
+    expect(contentDirectionForLocale("finglish")).toBe("rtl");
+    expect(messagesLocaleFor("finglish")).toBe("en");
+  });
+
+  it("resolves Persian as full-site RTL", () => {
+    expect(directionForLocale("fa")).toBe("rtl");
+    expect(contentDirectionForLocale("fa")).toBe("rtl");
+    expect(messagesLocaleFor("fa")).toBe("fa");
   });
 });
 
@@ -30,9 +45,21 @@ describe("translator", () => {
     expect(t("common.brand")).toBe("PFMP");
   });
 
+  it("keeps English copy for Finglish", () => {
+    const { t, locale } = createTranslator("finglish");
+    expect(locale).toBe("finglish");
+    expect(t("nav.tasks")).toBe("Tasks");
+    expect(t("settings.title")).toBe("Settings");
+  });
+
+  it("uses Persian copy for fa", () => {
+    const { t } = createTranslator("fa");
+    expect(t("nav.tasks")).toBe("کارها");
+    expect(t("settings.title")).toBe("تنظیمات");
+  });
+
   it("interpolates params", () => {
     const { t } = createTranslator("en");
-    // reuse a key path by testing interpolate via known string path — add inline
     expect(t("errors.NOT_FOUND")).toBe("Not found");
   });
 

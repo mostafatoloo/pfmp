@@ -14,7 +14,10 @@ export async function GET(request: Request) {
           email: ctx.email,
           name: ctx.name,
           timezone: ctx.timezone,
-          locale: ctx.locale === "fa" ? "fa" : "en",
+          locale:
+            ctx.locale === "fa" || ctx.locale === "finglish" || ctx.locale === "en"
+              ? ctx.locale
+              : "en",
         },
         workspace: {
           id: ctx.workspace.id,

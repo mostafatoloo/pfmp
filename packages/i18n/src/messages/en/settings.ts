@@ -4,7 +4,8 @@ export const settings = {
   profile: "Profile",
   email: "Email",
   workspace: "Workspace",
-  languageHint: "Only English is available in this release. More languages can be enabled when translations are complete.",
+  languageHint:
+    "English: LTR interface and content. Finglish: English interface with RTL tables and content. Persian: full-site RTL.",
   calendarSystem: "Calendar system",
   calendarGregory: "Gregorian",
   calendarPersian: "Persian (Jalali)",

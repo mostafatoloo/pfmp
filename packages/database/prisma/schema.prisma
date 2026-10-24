@@ -145,6 +145,7 @@ model Workspace {
   pomodoroConfigs  PomodoroConfig[]
   pomodoroSessions PomodoroSession[]
   timetableSlots   TimetableSlot[]
+  studySettings    StudySettings?
   notifications    Notification[]
   exportArtifacts  ExportArtifact[]
   jobs             Job[]
@@ -498,6 +499,8 @@ model TimetableSlot {
   /// school_class | study_session | other_class
   kind         String    @db.NVarChar(32)
   title        String    @db.NVarChar(300)
+  /// Short subtitle shown under the title in the grid
+  description  String?   @db.NVarChar(500)
   /// JS getDay(): 0=Sunday … 6=Saturday
   dayOfWeek    Int
   /// Minutes from midnight local (0–1439)
@@ -513,6 +516,28 @@ model TimetableSlot {
 
   @@index([workspaceId, dayOfWeek, startMinutes])
   @@map("TimetableSlot")
+}
+
+/// Per-workspace study week preferences (school hours, pattern, grid defaults)
+model StudySettings {
+  id                   String   @id @db.UniqueIdentifier @default(uuid())
+  workspaceId          String   @unique @db.UniqueIdentifier
+  /// Minutes from midnight — school day window
+  schoolStartMinutes   Int      @default(480)
+  schoolEndMinutes     Int      @default(780)
+  /// sat_thu | sat_wed
+  schoolWeekPattern    String   @default("sat_thu") @db.NVarChar(16)
+  /// Default equal-block count for new day fills (not fixed grid lines)
+  defaultColumnCount   Int      @default(7)
+  /// Visible time axis on the weekly grid
+  dayStartMinutes      Int      @default(420)
+  dayEndMinutes        Int      @default(1320)
+  createdAtUtc         DateTime @default(now()) @db.DateTime2
+  updatedAtUtc         DateTime @updatedAt @db.DateTime2
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@map("StudySettings")
 }
 
 // ─── Notifications, jobs, exports ────────────────────────────────────────────

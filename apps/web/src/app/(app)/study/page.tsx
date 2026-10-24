@@ -3,12 +3,16 @@ import { headers } from "next/headers";
 import { requirePageWorkspace } from "@/lib/require-page-auth";
 import { createTranslator } from "@pfmp/i18n";
 import { getPrisma, TimetableService } from "@pfmp/database";
-import { StudyTimetable } from "./study-timetable";
+import { StudySchedule } from "./study-schedule";
 
 export default async function StudyPage() {
   const ctx = await requirePageWorkspace(await headers());
   const { t } = createTranslator(ctx.locale);
-  const slots = await new TimetableService(getPrisma()).list(ctx.workspace.id);
+  const service = new TimetableService(getPrisma());
+  const [slots, settings] = await Promise.all([
+    service.list(ctx.workspace.id),
+    service.getSettings(ctx.workspace.id),
+  ]);
 
   return (
     <SignedInShell pathname="/study" locale={ctx.locale}>
@@ -16,20 +20,23 @@ export default async function StudyPage() {
         <div>
           <h1>{t("study.title")}</h1>
           <p className="panel-lead">
-            Your weekly timetable. Add school classes, after-school study blocks, and other classes.
-            School days are marked so the full week plan is clear.
+            Plan the week as a schedule grid: school classes first, then fill free time with study
+            and other activities. Each day keeps its own time divisions.
           </p>
         </div>
-        <StudyTimetable
+        <StudySchedule
           initialSlots={slots.map((s) => ({
             id: s.id,
             kind: s.kind,
             title: s.title,
+            description: s.description,
             dayOfWeek: s.dayOfWeek,
             startMinutes: s.startMinutes,
             endMinutes: s.endMinutes,
             classType: s.classType,
+            notes: s.notes,
           }))}
+          initialSettings={settings}
         />
       </section>
     </SignedInShell>

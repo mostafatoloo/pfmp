@@ -1,8 +1,26 @@
+import { config as loadEnv } from "dotenv";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 import { PrismaMssql } from "@prisma/adapter-mssql";
 import { PrismaClient } from "../generated/prisma/index";
 
 export type { PrismaClient } from "../generated/prisma/index";
 export * from "../generated/prisma/index";
+
+/** Load repo-root .env when DATABASE_URL is missing (Next often runs with cwd = apps/web). */
+function ensureDatabaseUrlFromEnvFiles() {
+  if (process.env.DATABASE_URL) return;
+  const candidates = [
+    resolve(process.cwd(), ".env"),
+    resolve(process.cwd(), "../.env"),
+    resolve(process.cwd(), "../../.env"),
+  ];
+  for (const path of candidates) {
+    if (!existsSync(path)) continue;
+    loadEnv({ path });
+    if (process.env.DATABASE_URL) return;
+  }
+}
 
 export type MssqlConfig = {
   server: string;
@@ -61,6 +79,10 @@ export function parseSqlServerUrl(url: string): MssqlConfig {
 }
 
 export function createPrismaClient(databaseUrl = process.env.DATABASE_URL): PrismaClient {
+  if (!databaseUrl) {
+    ensureDatabaseUrlFromEnvFiles();
+    databaseUrl = process.env.DATABASE_URL;
+  }
   if (!databaseUrl) {
     throw new Error("DATABASE_URL is not set");
   }

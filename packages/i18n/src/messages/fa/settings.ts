@@ -1,0 +1,25 @@
+export const settings = {
+  title: "تنظیمات",
+  subtitle: "نمایه، زبان، اعلان‌ها، تلگرام و ترجیحات هوش مصنوعی.",
+  profile: "نمایه",
+  email: "ایمیل",
+  workspace: "فضای کاری",
+  languageHint:
+    "انگلیسی: رابط و محتوا چپ‌به‌راست. Finglish: رابط انگلیسی، جداول و محتوا راست‌به‌چپ. فارسی: کل سایت راست‌به‌چپ.",
+  calendarSystem: "سامانهٔ تقویم",
+  calendarGregory: "میلادی",
+  calendarPersian: "هجری شمسی",
+  telegram: "تلگرام",
+  telegramLinked: "متصل",
+  telegramNotLinked: "متصل نیست",
+  telegramLink: "اتصال تلگرام",
+  telegramUnlink: "قطع اتصال",
+  telegramHint: "اختیاری. برنامه بدون تلگرام کامل کار می‌کند.",
+  notifications: "ترجیحات اعلان",
+  quietHours: "ساعات سکوت",
+  aiAssistant: "دستیار هوش مصنوعی",
+  aiEnabled: "فعال‌سازی دستیار هوش مصنوعی",
+  aiPrivacy:
+    "در صورت فعال بودن، خلاصه‌های مجاز از داده‌های شما ممکن است به ارائه‌دهندهٔ پیکربندی‌شده ارسال شود. گذرواژه و اسرار هرگز ارسال نمی‌شوند.",
+  signOutHint: "خروج، نشست شما را روی این دستگاه پایان می‌دهد.",
+} as const;
